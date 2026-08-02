@@ -39,7 +39,6 @@ void reset_hash_table(void)
 void test_save_and_backup_cache(void)
 {
     Stock stock;
-    Node *node;
 
     ensure_directories();
     cleanup_files();

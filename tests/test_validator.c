@@ -2,6 +2,7 @@
 #include <CUnit/Basic.h>
 #include <string.h>
 
+#include "../model/stock.h"
 #include "../validation/validator.h"
 
 void test_validateSymbol_null(void)
