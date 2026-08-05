@@ -1,18 +1,23 @@
 #!/bin/bash
 
 # Run all CUnit test binaries in this folder.
-# Usage: ./run_tests.sh
+# Usage: ./tests/run_tests.sh
 
 set -e
+cd "$(dirname "$0")"
 
 TESTS=(
     test_validator
     test_hash_table
     test_lru_cache
     test_statistics
+    test_authentication
+    test_cache_manager
     test_storage
     test_logging
-    test_memory_manager
+    test_timestamp
+    test_thread_manager
+    test_main
 )
 
 for test in "${TESTS[@]}"; do
