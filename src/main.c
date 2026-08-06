@@ -75,36 +75,32 @@ int main(void)
     }
 
     loadStatistics();
-
-    loadCache();
+    (void)loadCache();
 
     while (1)
     {
         displayLoginMenu();
 
-        scanf("%d", &choice);
+        if (scanf("%d", &choice) != 1)
+        {
+            break;
+        }
 
         switch (choice)
         {
             case 1:
-
-                registerUser();
-
+                (void)registerUser();
                 break;
 
             case 2:
-
                 loggedIn = loginUser();
-
-                if (loggedIn)
+                if (loggedIn != 0)
                 {
                     goto APPLICATION_MENU;
                 }
-
                 break;
 
             case 3:
-
                 if (requestCacheSaveAndWait() == 0)
                 {
                     printf("Cache saved successfully\n");
@@ -115,13 +111,13 @@ int main(void)
                 }
 
                 saveStatistics();
-
+                clearCache();
                 (void)shutdownThreadManager();
                 return 0;
 
             default:
-
                 printf("Invalid Choice\n");
+                break;
         }
     }
 
@@ -131,48 +127,38 @@ APPLICATION_MENU:
     {
         displayMainMenu();
 
-        scanf("%d", &choice);
+        if (scanf("%d", &choice) != 1)
+        {
+            break;
+        }
 
         switch (choice)
         {
             case 1:
-
                 addStock();
-
                 break;
 
             case 2:
-
                 searchStock();
-
                 break;
 
             case 3:
-
                 updateStock();
-
                 break;
 
             case 4:
-
                 deleteStock();
-
                 break;
 
             case 5:
-
                 displayStocks();
-
                 break;
 
             case 6:
-
                 displayStatistics();
-
                 break;
 
             case 7:
-
                 if (signalCacheSave() == 0)
                 {
                     printf("Cache save requested\n");
@@ -181,15 +167,11 @@ APPLICATION_MENU:
                 {
                     printf("Unable to request cache save\n");
                 }
-
                 saveStatistics();
-
                 break;
 
             case 8:
-
-                loadCache();
-
+                (void)loadCache();
                 break;
 
             case 9:
@@ -200,13 +182,10 @@ APPLICATION_MENU:
                 break;
 
             case 10:
-
                 displayLRU();
-
                 break;
 
             case 11:
-
                 if (requestCacheSaveAndWait() == 0)
                 {
                     printf("Cache saved successfully\n");
@@ -217,18 +196,20 @@ APPLICATION_MENU:
                 }
 
                 saveStatistics();
-
+                clearCache();
                 printf("Application Closed Successfully\n");
-
                 (void)shutdownThreadManager();
                 return 0;
 
             default:
-
                 printf("Invalid Choice\n");
+                break;
         }
     }
 
+    clearCache();
+    (void)shutdownThreadManager();
     return 0;
 }
 #endif
+

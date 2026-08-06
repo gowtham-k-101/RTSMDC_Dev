@@ -23,4 +23,6 @@ void deleteStock(void);
 
 void displayStocks(void);
 
+void clearCache(void);
+
 #endif

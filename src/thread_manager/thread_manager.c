@@ -19,18 +19,24 @@
 
 static pthread_t logThread;
 static pthread_t persistenceThread;
-static pthread_mutex_t logMutex;
-static pthread_cond_t logCond;
-static pthread_mutex_t cacheMutex;
-static pthread_cond_t cacheCond;
-static pthread_cond_t cacheDoneCond;
-static int logQueueHead;
-static int logQueueTail;
-static int logQueueCount;
+
+static pthread_mutex_t logMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t logCond = PTHREAD_COND_INITIALIZER;
+
+static pthread_mutex_t cacheMutex = PTHREAD_MUTEX_INITIALIZER;
+
+static pthread_mutex_t persistenceMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t persistenceCond = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t persistenceDoneCond = PTHREAD_COND_INITIALIZER;
+
+static int logQueueHead = 0;
+static int logQueueTail = 0;
+static int logQueueCount = 0;
 static char logQueue[LOG_QUEUE_LENGTH][MAX_LOG_ENTRY_SIZE];
-static int shutdownRequested;
-static int saveRequested;
-static int saveCompleted;
+
+static int shutdownRequested = 0;
+static int saveRequested = 0;
+static int saveCompleted = 0;
 
 static int enqueueLogEntryInternal(const char *entry)
 {
@@ -44,7 +50,7 @@ static int enqueueLogEntryInternal(const char *entry)
         return -1;
     }
 
-    strncpy(logQueue[logQueueTail], entry, MAX_LOG_ENTRY_SIZE - 1);
+    (void)strncpy(logQueue[logQueueTail], entry, (size_t)(MAX_LOG_ENTRY_SIZE - 1));
     logQueue[logQueueTail][MAX_LOG_ENTRY_SIZE - 1] = '\0';
     logQueueTail = (logQueueTail + 1) % LOG_QUEUE_LENGTH;
     ++logQueueCount;
@@ -75,7 +81,7 @@ static void *logThreadMain(void *context)
             char entry[MAX_LOG_ENTRY_SIZE];
             FILE *fp;
 
-            strncpy(entry, logQueue[logQueueHead], MAX_LOG_ENTRY_SIZE);
+            (void)strncpy(entry, logQueue[logQueueHead], (size_t)MAX_LOG_ENTRY_SIZE);
             entry[MAX_LOG_ENTRY_SIZE - 1] = '\0';
             logQueueHead = (logQueueHead + 1) % LOG_QUEUE_LENGTH;
             --logQueueCount;
@@ -88,7 +94,7 @@ static void *logThreadMain(void *context)
                 {
                     /* Failed log write, but preserve application flow. */
                 }
-                fclose(fp);
+                (void)fclose(fp);
             }
         }
         else
@@ -106,28 +112,28 @@ static void *persistenceThreadMain(void *context)
 
     while (1)
     {
-        (void)pthread_mutex_lock(&cacheMutex);
+        (void)pthread_mutex_lock(&persistenceMutex);
 
         while ((saveRequested == 0) && (shutdownRequested == 0))
         {
-            (void)pthread_cond_wait(&cacheCond, &cacheMutex);
+            (void)pthread_cond_wait(&persistenceCond, &persistenceMutex);
         }
 
         if ((shutdownRequested != 0) && (saveRequested == 0))
         {
-            (void)pthread_mutex_unlock(&cacheMutex);
+            (void)pthread_mutex_unlock(&persistenceMutex);
             break;
         }
 
         saveRequested = 0;
-        (void)pthread_mutex_unlock(&cacheMutex);
+        (void)pthread_mutex_unlock(&persistenceMutex);
 
-        saveCache();
+        (void)saveCache();
 
-        (void)pthread_mutex_lock(&cacheMutex);
+        (void)pthread_mutex_lock(&persistenceMutex);
         saveCompleted = 1;
-        (void)pthread_cond_signal(&cacheDoneCond);
-        (void)pthread_mutex_unlock(&cacheMutex);
+        (void)pthread_cond_signal(&persistenceDoneCond);
+        (void)pthread_mutex_unlock(&persistenceMutex);
     }
 
     return NULL;
@@ -137,7 +143,7 @@ int initializeThreadManager(void)
 {
     int result;
 
-    memset(logQueue, 0, sizeof(logQueue));
+    (void)memset(logQueue, 0, sizeof(logQueue));
     logQueueHead = 0;
     logQueueTail = 0;
     logQueueCount = 0;
@@ -158,15 +164,7 @@ int initializeThreadManager(void)
         return -1;
     }
 
-    result = pthread_mutex_init(&cacheMutex, NULL);
-    if (result != 0)
-    {
-        (void)pthread_cond_destroy(&logCond);
-        (void)pthread_mutex_destroy(&logMutex);
-        return -1;
-    }
-
-    result = pthread_cond_init(&cacheCond, NULL);
+    result = pthread_mutex_init(&persistenceMutex, NULL);
     if (result != 0)
     {
         (void)pthread_mutex_destroy(&cacheMutex);
@@ -175,10 +173,21 @@ int initializeThreadManager(void)
         return -1;
     }
 
-    result = pthread_cond_init(&cacheDoneCond, NULL);
+    result = pthread_cond_init(&persistenceCond, NULL);
     if (result != 0)
     {
-        (void)pthread_cond_destroy(&cacheCond);
+        (void)pthread_mutex_destroy(&persistenceMutex);
+        (void)pthread_mutex_destroy(&cacheMutex);
+        (void)pthread_cond_destroy(&logCond);
+        (void)pthread_mutex_destroy(&logMutex);
+        return -1;
+    }
+
+    result = pthread_cond_init(&persistenceDoneCond, NULL);
+    if (result != 0)
+    {
+        (void)pthread_cond_destroy(&persistenceCond);
+        (void)pthread_mutex_destroy(&persistenceMutex);
         (void)pthread_mutex_destroy(&cacheMutex);
         (void)pthread_cond_destroy(&logCond);
         (void)pthread_mutex_destroy(&logMutex);
@@ -188,7 +197,9 @@ int initializeThreadManager(void)
     result = pthread_create(&logThread, NULL, logThreadMain, NULL);
     if (result != 0)
     {
-        (void)pthread_cond_destroy(&cacheCond);
+        (void)pthread_cond_destroy(&persistenceDoneCond);
+        (void)pthread_cond_destroy(&persistenceCond);
+        (void)pthread_mutex_destroy(&persistenceMutex);
         (void)pthread_mutex_destroy(&cacheMutex);
         (void)pthread_cond_destroy(&logCond);
         (void)pthread_mutex_destroy(&logMutex);
@@ -198,10 +209,16 @@ int initializeThreadManager(void)
     result = pthread_create(&persistenceThread, NULL, persistenceThreadMain, NULL);
     if (result != 0)
     {
-        (void)pthread_cancel(logThread);
+        (void)pthread_mutex_lock(&logMutex);
+        shutdownRequested = 1;
+        (void)pthread_cond_signal(&logCond);
+        (void)pthread_mutex_unlock(&logMutex);
+
         (void)pthread_join(logThread, NULL);
-        (void)pthread_cond_destroy(&cacheDoneCond);
-        (void)pthread_cond_destroy(&cacheCond);
+
+        (void)pthread_cond_destroy(&persistenceDoneCond);
+        (void)pthread_cond_destroy(&persistenceCond);
+        (void)pthread_mutex_destroy(&persistenceMutex);
         (void)pthread_mutex_destroy(&cacheMutex);
         (void)pthread_cond_destroy(&logCond);
         (void)pthread_mutex_destroy(&logMutex);
@@ -218,15 +235,17 @@ int shutdownThreadManager(void)
     (void)pthread_cond_signal(&logCond);
     (void)pthread_mutex_unlock(&logMutex);
 
-    (void)pthread_mutex_lock(&cacheMutex);
-    (void)pthread_cond_signal(&cacheCond);
-    (void)pthread_mutex_unlock(&cacheMutex);
+    (void)pthread_mutex_lock(&persistenceMutex);
+    shutdownRequested = 1;
+    (void)pthread_cond_signal(&persistenceCond);
+    (void)pthread_mutex_unlock(&persistenceMutex);
 
     (void)pthread_join(logThread, NULL);
     (void)pthread_join(persistenceThread, NULL);
 
-    (void)pthread_cond_destroy(&cacheDoneCond);
-    (void)pthread_cond_destroy(&cacheCond);
+    (void)pthread_cond_destroy(&persistenceDoneCond);
+    (void)pthread_cond_destroy(&persistenceCond);
+    (void)pthread_mutex_destroy(&persistenceMutex);
     (void)pthread_mutex_destroy(&cacheMutex);
     (void)pthread_cond_destroy(&logCond);
     (void)pthread_mutex_destroy(&logMutex);
@@ -263,7 +282,7 @@ int signalCacheSave(void)
 {
     int result;
 
-    result = pthread_mutex_lock(&cacheMutex);
+    result = pthread_mutex_lock(&persistenceMutex);
     if (result != 0)
     {
         return -1;
@@ -271,8 +290,8 @@ int signalCacheSave(void)
 
     saveRequested = 1;
     saveCompleted = 0;
-    (void)pthread_cond_signal(&cacheCond);
-    (void)pthread_mutex_unlock(&cacheMutex);
+    (void)pthread_cond_signal(&persistenceCond);
+    (void)pthread_mutex_unlock(&persistenceMutex);
 
     return 0;
 }
@@ -281,7 +300,7 @@ int requestCacheSaveAndWait(void)
 {
     int result;
 
-    result = pthread_mutex_lock(&cacheMutex);
+    result = pthread_mutex_lock(&persistenceMutex);
     if (result != 0)
     {
         return -1;
@@ -289,21 +308,21 @@ int requestCacheSaveAndWait(void)
 
     if (shutdownRequested != 0)
     {
-        (void)pthread_mutex_unlock(&cacheMutex);
+        (void)pthread_mutex_unlock(&persistenceMutex);
         return -1;
     }
 
     saveRequested = 1;
     saveCompleted = 0;
-    (void)pthread_cond_signal(&cacheCond);
+    (void)pthread_cond_signal(&persistenceCond);
 
     while ((saveCompleted == 0) && (shutdownRequested == 0))
     {
-        (void)pthread_cond_wait(&cacheDoneCond, &cacheMutex);
+        (void)pthread_cond_wait(&persistenceDoneCond, &persistenceMutex);
     }
 
-    result = saveCompleted ? 0 : -1;
-    (void)pthread_mutex_unlock(&cacheMutex);
+    result = (saveCompleted != 0) ? 0 : -1;
+    (void)pthread_mutex_unlock(&persistenceMutex);
 
     return result;
 }

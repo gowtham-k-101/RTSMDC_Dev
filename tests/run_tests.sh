@@ -18,7 +18,9 @@ TESTS=(
     test_timestamp
     test_thread_manager
     test_main
+    test_integration
 )
+
 
 for test in "${TESTS[@]}"; do
     echo "Running $test..."

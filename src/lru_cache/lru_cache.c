@@ -15,6 +15,8 @@
 #include "model/stock.h"
 #include "lru_cache/lru_cache.h"
 
+#include "thread_manager/thread_manager.h"
+
 Node *lruHead = NULL;
 Node *lruTail = NULL;
 
@@ -113,7 +115,10 @@ Node* getLRUTail(void)
 
 void displayLRU(void)
 {
-    Node *current = lruHead;
+    Node *current;
+
+    (void)cacheLock();
+    current = lruHead;
 
     printf("\n===== LRU ORDER =====\n");
 
@@ -130,4 +135,5 @@ void displayLRU(void)
     }
 
     printf("\n");
+    (void)cacheUnlock();
 }
