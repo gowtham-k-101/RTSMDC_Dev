@@ -34,7 +34,8 @@ static int logQueueTail = 0;
 static int logQueueCount = 0;
 static char logQueue[LOG_QUEUE_LENGTH][MAX_LOG_ENTRY_SIZE];
 
-static int shutdownRequested = 0;
+static int logShutdownRequested = 0;
+static int persistenceShutdownRequested = 0;
 static int saveRequested = 0;
 static int saveCompleted = 0;
 
@@ -65,12 +66,12 @@ static void *logThreadMain(void *context)
     {
         (void)pthread_mutex_lock(&logMutex);
 
-        while ((logQueueCount == 0) && (shutdownRequested == 0))
+        while ((logQueueCount == 0) && (logShutdownRequested == 0))
         {
             (void)pthread_cond_wait(&logCond, &logMutex);
         }
 
-        if ((shutdownRequested != 0) && (logQueueCount == 0))
+        if ((logShutdownRequested != 0) && (logQueueCount == 0))
         {
             (void)pthread_mutex_unlock(&logMutex);
             break;
@@ -114,12 +115,12 @@ static void *persistenceThreadMain(void *context)
     {
         (void)pthread_mutex_lock(&persistenceMutex);
 
-        while ((saveRequested == 0) && (shutdownRequested == 0))
+        while ((saveRequested == 0) && (persistenceShutdownRequested == 0))
         {
             (void)pthread_cond_wait(&persistenceCond, &persistenceMutex);
         }
 
-        if ((shutdownRequested != 0) && (saveRequested == 0))
+        if ((persistenceShutdownRequested != 0) && (saveRequested == 0))
         {
             (void)pthread_mutex_unlock(&persistenceMutex);
             break;
@@ -147,7 +148,8 @@ int initializeThreadManager(void)
     logQueueHead = 0;
     logQueueTail = 0;
     logQueueCount = 0;
-    shutdownRequested = 0;
+    logShutdownRequested = 0;
+    persistenceShutdownRequested = 0;
     saveRequested = 0;
     saveCompleted = 0;
 
@@ -210,7 +212,7 @@ int initializeThreadManager(void)
     if (result != 0)
     {
         (void)pthread_mutex_lock(&logMutex);
-        shutdownRequested = 1;
+        logShutdownRequested = 1;
         (void)pthread_cond_signal(&logCond);
         (void)pthread_mutex_unlock(&logMutex);
 
@@ -231,12 +233,12 @@ int initializeThreadManager(void)
 int shutdownThreadManager(void)
 {
     (void)pthread_mutex_lock(&logMutex);
-    shutdownRequested = 1;
+    logShutdownRequested = 1;
     (void)pthread_cond_signal(&logCond);
     (void)pthread_mutex_unlock(&logMutex);
 
     (void)pthread_mutex_lock(&persistenceMutex);
-    shutdownRequested = 1;
+    persistenceShutdownRequested = 1;
     (void)pthread_cond_signal(&persistenceCond);
     (void)pthread_mutex_unlock(&persistenceMutex);
 
@@ -306,7 +308,7 @@ int requestCacheSaveAndWait(void)
         return -1;
     }
 
-    if (shutdownRequested != 0)
+    if (persistenceShutdownRequested != 0)
     {
         (void)pthread_mutex_unlock(&persistenceMutex);
         return -1;
@@ -316,7 +318,7 @@ int requestCacheSaveAndWait(void)
     saveCompleted = 0;
     (void)pthread_cond_signal(&persistenceCond);
 
-    while ((saveCompleted == 0) && (shutdownRequested == 0))
+    while ((saveCompleted == 0) && (persistenceShutdownRequested == 0))
     {
         (void)pthread_cond_wait(&persistenceDoneCond, &persistenceMutex);
     }

@@ -73,7 +73,6 @@ static int countCacheNodes(void)
 void addStock(void)
 {
     Stock stock;
-    Node *node;
 
     printf("\nEnter Stock Symbol : ");
     if (scanf("%19s", stock.symbol) != 1)
@@ -148,7 +147,7 @@ void addStock(void)
 
     if (insertNode(stock) != 0)
     {
-        node = searchNode(stock.symbol);
+        Node *node = searchNode(stock.symbol);
         if (node != NULL)
         {
             addToFront(node);

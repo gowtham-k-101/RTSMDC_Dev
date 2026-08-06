@@ -214,7 +214,7 @@ static void *loggerStatsThread(void *arg)
     return NULL;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char * const *argv)
 {
     int i;
     pthread_t *threads;
