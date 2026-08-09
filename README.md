@@ -173,15 +173,6 @@ make codeoptdata
 
 ## 5. Code Coverage Benchmark Results
 
-```text
-========================================================================
- RTSMDC_Dev Code Coverage Report
-========================================================================
- Summary Coverage Rate:
-   Lines......: 85.0% (601 of 707 lines)
-   Functions..: 100.0% (55 of 55 functions)
-========================================================================
-```
 
 | Source Module | Line Coverage | Function Coverage | Status |
 | :--- | :---: | :---: | :---: |
@@ -202,19 +193,6 @@ make codeoptdata
 
 ## 6. Code Optimization & Assembly Benchmark Results
 
-```text
-========================================================================================================
-                          RTSMDC_Dev Code Optimization & Assembly Analysis                              
-========================================================================================================
-Opt Level  | Assembly Lines   | .text Segment    | Binary Size (B) | Real Time (s) | User CPU (s) | Sys CPU (s) 
---------------------------------------------------------------------------------------------------------
--O0        | 4419             | 20970            | 37240           | 0.12s         | 0.07s        | 0.22s       
--O1        | 3814             | 18586            | 33024           | 0.13s         | 0.09s        | 0.20s       
--O2        | 4119             | 19044            | 33024           | 0.14s         | 0.10s        | 0.25s       
--O3        | 4150             | 19164            | 33024           | 0.14s         | 0.09s        | 0.25s       
--Os        | 3654             | 17123            | 32984           | 0.16s         | 0.09s        | 0.23s       
-========================================================================================================
-```
 
 | 1. Opt Level | 2. Assembly Lines | 3. `.text` Segment Size (Bytes) | 4. Executable Binary Size (Bytes) | 5. Real Time (s) | 6. User CPU Time (s) | 7. System CPU Time (s) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
