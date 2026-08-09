@@ -35,6 +35,14 @@ static void test_storageAPIs(void)
 
     clearHashTable();
     clearLRU();
+
+    /* Test error paths when data/cache_data.dat is missing */
+    (void)remove("data/cache_data.dat");
+    int loadResFail = loadCache();
+    CU_ASSERT_EQUAL(loadResFail, -1);
+
+    int backupResFail = backupCache();
+    CU_ASSERT_EQUAL(backupResFail, -1);
 }
 
 int main(void)

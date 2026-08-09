@@ -50,6 +50,23 @@ static void test_insertSearchDeleteNode(void)
 
     CU_ASSERT_EQUAL(deleteNode("NONEXISTENT"), 0);
 
+    /* Bucket collision chain test to exercise previous != NULL deletion branch */
+    char symBuf[20];
+    int k;
+    for (k = 0; k < 50; k++)
+    {
+        snprintf(symBuf, sizeof(symBuf), "STK%d", k);
+        Stock st = {"", 10.0f + (float)k, 100 + k};
+        strncpy(st.symbol, symBuf, sizeof(st.symbol) - 1);
+        (void)insertNode(st);
+    }
+    /* Delete all inserted stocks to exercise chained previous != NULL deletions */
+    for (k = 0; k < 50; k++)
+    {
+        snprintf(symBuf, sizeof(symBuf), "STK%d", k);
+        (void)deleteNode(symBuf);
+    }
+
     clearHashTable();
     CU_ASSERT_PTR_NULL(searchNode("GOOG"));
 }

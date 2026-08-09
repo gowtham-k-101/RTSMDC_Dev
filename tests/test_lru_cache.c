@@ -23,6 +23,11 @@ static void test_lruOperations(void)
     (void)strncpy(n2->stock.symbol, "S2", SYMBOL_LENGTH);
     (void)strncpy(n3->stock.symbol, "S3", SYMBOL_LENGTH);
 
+    /* NULL node edge cases */
+    addToFront(NULL);
+    removeFromLRU(NULL);
+    moveToFront(NULL);
+
     addToFront(n1);
     CU_ASSERT_PTR_EQUAL(lruHead, n1);
     CU_ASSERT_PTR_EQUAL(lruTail, n1);
@@ -34,6 +39,9 @@ static void test_lruOperations(void)
     addToFront(n3);
     CU_ASSERT_PTR_EQUAL(lruHead, n3);
     CU_ASSERT_PTR_EQUAL(getLRUTail(), n1);
+
+    /* Move head to front (should be no-op) */
+    moveToFront(n3);
 
     moveToFront(n1);
     CU_ASSERT_PTR_EQUAL(lruHead, n1);

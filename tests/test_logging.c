@@ -20,6 +20,11 @@ static void test_loggingFunctions(void)
     /* NULL parameters check */
     CU_ASSERT_EQUAL(logInfo(NULL, "Msg"), -1);
     CU_ASSERT_EQUAL(logInfo("MOD", NULL), -1);
+    CU_ASSERT_EQUAL(logError(NULL, "Msg"), -1);
+    CU_ASSERT_EQUAL(logError("MOD", NULL), -1);
+    CU_ASSERT_EQUAL(logStockOperation(NULL, "ADD", "AAPL"), -1);
+    CU_ASSERT_EQUAL(logStockOperation("MOD", NULL, "AAPL"), -1);
+    CU_ASSERT_EQUAL(logStockOperation("MOD", "ADD", NULL), -1);
 
     (void)shutdownThreadManager();
 }

@@ -18,6 +18,7 @@ static void test_threadManagerLifecycle(void)
     CU_ASSERT_EQUAL(enqueueLogEntry("Test entry"), 0);
 
     CU_ASSERT_EQUAL(signalCacheSave(), 0);
+    CU_ASSERT_EQUAL(requestCacheSaveAndWait(), 0);
 
     CU_ASSERT_EQUAL(shutdownThreadManager(), 0);
 }

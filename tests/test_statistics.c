@@ -33,6 +33,23 @@ static void test_statisticsTracking(void)
     CU_ASSERT_EQUAL(stats.updates, 1);
     CU_ASSERT_EQUAL(stats.deletions, 1);
     CU_ASSERT_EQUAL(stats.evictions, 1);
+
+    displayStatistics();
+    saveStatistics();
+    loadStatistics();
+
+    /* Test missing statistics file */
+    (void)remove("data/statistics.dat");
+    loadStatistics();
+
+    /* Test corrupt statistics file */
+    FILE *fp = fopen("data/statistics.dat", "w");
+    if (fp != NULL)
+    {
+        fprintf(fp, "CORRUPT_DATA_FORMAT\n");
+        fclose(fp);
+    }
+    loadStatistics();
 }
 
 int main(void)

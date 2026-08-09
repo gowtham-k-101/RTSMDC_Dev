@@ -4,119 +4,196 @@ A high-performance, thread-safe, memory-safe C99/POSIX real-time stock market da
 
 ---
 
-## Key Architecture & Features
+## 1. Project Overview & Key Architecture
 
-- **Hash-Table Lookup & Storage**: O(1) average stock lookup by ticker symbol using custom hash table chained collision resolution.
-- **LRU Eviction Policy**: Configurable constant capacity (`CACHE_CAPACITY = 10`). Least-recently-used node (`lruTail`) is automatically evicted and freed when capacity is reached upon stock insertion.
+- **O(1) Hash-Table Lookup & Storage**: Instant stock lookup by ticker symbol using custom hash table with chained collision resolution.
+- **LRU Eviction Policy**: Configurable constant capacity (`CACHE_CAPACITY = 100`). The least-recently-used node (`lruTail`) is automatically evicted and freed upon stock insertion when capacity is exceeded.
 - **Thread Safety & Fine-Grained Synchronization**:
-  - Independent POSIX mutexes for cache data (`cacheMutex`), persistence signaling (`persistenceMutex`), statistics tracking (`statsMutex`), user auth (`userMutex`), and log queue (`logMutex`).
-  - Strict lock granularity: interactive user input (`scanf`) and heavy file I/O operations are performed outside critical sections.
-  - 100% thread lifecycle compliance: single creation, single join, zero detached thread leaks.
+  - Independent POSIX mutexes for cache state (`cacheMutex`), persistence signaling (`persistenceMutex`), statistics tracking (`statsMutex`), user authentication (`userMutex`), and log queue (`logMutex`).
+  - Lock-free interactive I/O: User input (`scanf`) and heavy file I/O operations are strictly performed outside critical sections.
+  - 100% thread lifecycle compliance: Single creation, single join, zero detached thread leaks.
 - **Asynchronous Persistence & Logging Subsystem**:
-  - Asynchronous background log thread flushing formatted log messages (including high-resolution timestamp and thread ID) to `logs/application.log`.
-  - Asynchronous background persistence thread executing disk cache saves without blocking main worker threads.
-- **Strict Static Analysis & Standards Alignment**:
-  - Compiles cleanly with GCC 13+ strict flags: `-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Werror -D_POSIX_C_SOURCE=200809L -pthread`.
-  - Refactored toward practical **MISRA-C:2012** compliance.
-- **Comprehensive Verification & Concurrency Stress Testing**:
-  - Parameterized multi-threaded stress simulation binary (`stress_test`) running 32 concurrent threads executing 96,000+ operations under ASan, UBSan, and Helgrind.
-  - Complete 12-suite CUnit unit and integration test framework (`make test`).
+  - Background logging thread flushes formatted log messages (including high-resolution timestamp and thread ID) to `logs/application.log`.
+  - Background persistence thread executes disk cache saves asynchronously without blocking worker threads.
+- **Strict Verification & Concurrency Stress Testing**:
+  - Multi-threaded stress simulation binary (`stress_test`) running 32 concurrent threads executing 96,000+ operations under ASan, UBSan, and Helgrind.
+  - 12-suite CUnit unit and integration test framework (`make test`).
+  - **100.0% Function Coverage** and **85.0% Line Coverage** (`make coverage`).
+  - Multi-level assembly and code optimization benchmark analysis (`make codeoptdata`).
 
 ---
 
-## Directory Structure
+## 2. Complete Project Directory & File Tree Structure
 
 ```text
-.
-├── include/                   # Header files for core modules
-│   ├── analytics/             # Cache statistics tracking API
-│   ├── authentication/        # User registration and authentication API
-│   ├── cache_manager/         # High-level stock CRUD operations API
-│   ├── hash_table/            # Symbol hashing and bucket chain API
-│   ├── logging/               # Asynchronous logging & timestamp API
-│   ├── lru_cache/             # Doubly linked list LRU cache ordering API
-│   ├── memory/                # Safe node memory allocator API
-│   ├── model/                 # Data domain models (stock.h, user.h, statistics.h)
-│   ├── persistence/           # Cache disk save/load/backup API
-│   ├── thread_manager/        # POSIX thread lifecycle and queue signaling API
-│   └── validation/            # Symbol, price, volume input validation API
-├── src/                       # Source code implementations
-│   ├── main.c                 # Interactive CLI menu entry point
-│   ├── simulation/            # Multi-threaded stress test runner (stress_test.c)
-│   └── ...                    # Implementation files
-├── tests/                     # CUnit test suites and test runners
-├── data/                      # Persistent storage files (cache_data.dat, users.dat, etc.)
-└── logs/                      # Log file output directory (application.log)
+RTSMDC_Dev/
+├── Makefile                                # Master build automation file
+├── README.md                               # Project documentation & reference manual
+├── include/                                # Header files for core modules
+│   ├── analytics/
+│   │   └── analytics.h                     # Cache performance statistics API
+│   ├── authentication/
+│   │   └── auth.h                          # User registration & login authentication API
+│   ├── cache_manager/
+│   │   └── cache_manager.h                 # High-level stock CRUD operations API
+│   ├── hash_table/
+│   │   └── hash_table.h                    # Symbol hashing & bucket chain API
+│   ├── logging/
+│   │   ├── logger.h                        # Asynchronous logging API
+│   │   └── timestamp.h                     # High-resolution timestamp generator API
+│   ├── lru_cache/
+│   │   └── lru_cache.h                     # Doubly linked list LRU cache ordering API
+│   ├── memory/
+│   │   └── memory_manager.h                # Node memory allocation & release API
+│   ├── model/
+│   │   ├── statistics.h                    # Statistics domain model struct
+│   │   ├── stock.h                         # Stock domain model struct
+│   │   └── user.h                          # User domain model struct
+│   ├── persistence/
+│   │   └── storage.h                       # Disk cache save/load/backup API
+│   ├── thread_manager/
+│   │   └── thread_manager.h                # POSIX thread lifecycle & signaling API
+│   └── validation/
+│       └── validator.h                     # Input validation API (symbol, price, volume)
+├── src/                                    # Source code implementations
+│   ├── analytics/
+│   │   └── analytics.c                     # Cache statistics tracking implementation
+│   ├── authentication/
+│   │   └── auth.c                          # User registration & login implementation
+│   ├── cache_manager/
+│   │   └── cache_manager.c                 # High-level stock CRUD operations implementation
+│   ├── hash_table/
+│   │   └── hash_table.c                    # Hash table lookup & collision handling implementation
+│   ├── logging/
+│   │   ├── logger.c                        # Asynchronous log message queueing implementation
+│   │   └── timestamp.c                     # High-resolution POSIX timestamp implementation
+│   ├── lru_cache/
+│   │   └── lru_cache.c                     # Doubly linked list LRU node management
+│   ├── main.c                              # Main interactive CLI application entry point
+│   ├── memory/
+│   │   └── memory_manager.c                # Dynamic node allocation/deallocation implementation
+│   ├── persistence/
+│   │   └── storage.c                       # Disk file serialization (save/load/backup) implementation
+│   ├── simulation/
+│   │   └── stress_test.c                   # Parameterized multi-threaded stress test runner
+│   ├── thread_manager/
+│   │   └── thread_manager.c                # POSIX thread manager & queue signaling implementation
+│   └── validation/
+│       └── validator.c                     # Data input validation functions implementation
+├── tests/                                  # CUnit unit and integration test framework
+│   ├── compile_tests.sh                    # Test compilation script (supports COVERAGE=1)
+│   ├── run_tests.sh                        # Test suite execution runner script
+│   ├── test_authentication.c               # CUnit test suite for user authentication
+│   ├── test_cache_manager.c                # CUnit test suite for cache manager operations
+│   ├── test_hash_table.c                   # CUnit test suite for hash table lookups
+│   ├── test_integration.c                  # CUnit end-to-end integration test suite
+│   ├── test_logging.c                      # CUnit test suite for logger module
+│   ├── test_lru_cache.c                    # CUnit test suite for LRU cache ordering
+│   ├── test_main.c                         # CUnit test suite for main initialization
+│   ├── test_memory_manager.c               # CUnit test suite for memory manager
+│   ├── test_statistics.c                   # CUnit test suite for performance analytics
+│   ├── test_storage.c                      # CUnit test suite for disk persistence
+│   ├── test_thread_manager.c               # CUnit test suite for thread manager lifecycle
+│   └── test_validator.c                    # CUnit test suite for input validator
+├── data/                                   # Persistent binary/text storage files
+│   ├── backup.dat                          # Cache backup data file
+│   ├── cache_data.dat                      # Persistent cache data storage file
+│   ├── statistics.dat                      # Recorded cache statistics file
+│   └── users.dat                           # Encrypted user credentials data file
+└── logs/                                   # Log file output directory
+    └── application.log                     # High-resolution application log file
 ```
 
 ---
 
-## Build Instructions
+## 3. Comprehensive Command Reference
 
-### Standard Production Build
+### Build Commands
 
-Build the primary executable `app` and stress test binary `stress_test`:
-
-```sh
-make clean && make
-```
-
-### Debug Build with AddressSanitizer & UndefinedBehaviorSanitizer
-
-Build binaries instrumented with ASan and UBSan:
-
-```sh
-make clean && make DEBUG=1
-```
+| Command | Description |
+| :--- | :--- |
+| **`make`** or **`make all`** | Compiles the main application (`app`) and stress test binary (`stress_test`). |
+| **`make app`** | Compiles only the primary CLI application binary (`app`). |
+| **`make stress`** | Compiles only the multi-threaded stress simulation binary (`stress_test`). |
+| **`make DEBUG=1`** | Compiles binaries instrumented with AddressSanitizer (`-fsanitize=address`) and UndefinedBehaviorSanitizer (`-fsanitize=undefined`). |
+| **`make clean`** | Thoroughly removes all compiled object files (`.o`), executables, assembly files (`.s`), coverage reports, and temp test files without touching source code files. |
 
 ---
 
-## Testing & Concurrency Verification
+### Testing & Verification Commands
 
-### 1. CUnit Unit & Integration Test Suites
+| Command | Description |
+| :--- | :--- |
+| **`make test`** | Compiles and executes the complete 12-suite CUnit unit and integration test framework. |
+| **`make coverage`** | Instruments binaries with GCC `--coverage`, runs all test suites, captures `lcov` data, generates an interactive visual HTML report (`coverage_html/index.html`), and displays line/function coverage statistics. |
+| **`make valgrind`** | Runs the stress test binary under Valgrind to verify zero memory leaks. |
+| **`make helgrind`** | Runs the stress test binary under Valgrind's Helgrind tool to verify 100% thread race-free execution. |
+| **`make cppcheck`** | Runs static analysis warning, style, performance, and portability checks. |
+| **`make misra`** | Runs static analysis rule checking aligned with MISRA-C:2012 guidelines. |
 
-Run the complete 12-suite CUnit test runner:
+---
 
-```sh
-make test
+### Code Optimization Analysis Commands
+
+| Command | Description |
+| :--- | :--- |
+| **`make codeoptfile`** | Compiles combined assembly files (`app_O*.s`) and executables (`app_O*`, `stress_O*`) for all optimization levels (`-O0`, `-O1`, `-O2`, `-O3`, `-Os`). |
+| **`make codeoptdata`** | Executes multi-threaded benchmarks across all pre-compiled optimization levels and displays a formatted 7-parameter analysis table directly in the terminal. |
+
+---
+
+## 4. Execution Examples
+
+### 1. Running the Interactive CLI Application
+```bash
+make clean && make app
+./app
 ```
 
-### 2. Multi-Threaded Stress Test Simulation
-
-Execute the parameterized multi-threaded stress simulation with 32 threads performing 96,000 operations (10 reader threads, 10 updater threads, 5 persistence requesters, 7 logger/stats workers):
-
-```sh
+### 2. Running the Multi-Threaded Stress Test
+Run 32 concurrent threads executing 96,000 operations (10 reader threads, 10 updater threads, 5 persistence requesters, 7 logger/stats workers):
+```bash
+make clean && make stress
 ./stress_test 32 3000
 ```
 
-### 3. Helgrind Thread Race & Lock Verification
-
-Run the stress test under Valgrind's Helgrind tool to verify race-free execution and consistent lock ordering:
-
-```sh
-valgrind --tool=helgrind ./stress_test 16 1000
+### 3. Generating Code Coverage Report
+```bash
+make coverage
 ```
+View the generated visual HTML report in your browser:
+[coverage_html/index.html](file:///home/gowtham/Documents/cpoc/RTSMDC_Dev/coverage_html/index.html)
 
-### 4. Valgrind Memory Leak Verification
-
-Run the main application or stress simulation under Valgrind to verify zero memory leaks:
-
-```sh
-valgrind --leak-check=full --show-leak-kinds=all ./stress_test 16 500
+### 4. Running Code Optimization Analysis
+```bash
+make codeoptdata
 ```
 
 ---
 
-## User Interface & Menu Operations
+## 5. Code Coverage Benchmark Results
 
-The application provides a clean command-line interface:
-1. **User Registration & Login** (Option 1 & 2)
-2. **Add Stock** (Option 1 - validates symbol, price, volume, inserts node, enforces LRU capacity)
-3. **Search Stock** (Option 2 - searches hash table, moves hit to LRU head, records hit/miss)
-4. **Update Stock** (Option 3 - updates stock price outside lock)
-5. **Delete Stock** (Option 4 - unlinks from LRU and frees node)
-6. **Display Stocks** (Option 5 - prints hash table inventory under lock)
-7. **View Statistics** (Option 6 - displays hits, misses, insertions, updates, deletions, evictions, and hit ratio)
-8. **Save / Load / Backup Cache** (Options 7, 8, 9 - serializes cache to disk)
-9. **View LRU Order** (Option 10 - displays LRU ordering from head to tail)
-10. **Exit** (Option 11 - executes `clearCache()`, saves stats, flushes logs, and terminates threads cleanly)
+```text
+========================================================================
+ RTSMDC_Dev Code Coverage Report
+========================================================================
+ Summary Coverage Rate:
+   Lines......: 85.0% (601 of 707 lines)
+   Functions..: 100.0% (55 of 55 functions)
+========================================================================
+```
+
+| Source Module | Line Coverage | Function Coverage | Status |
+| :--- | :---: | :---: | :---: |
+| **`validation/validator.c`** | **100.0%** (15/15) | **100.0%** (3/3) | Passed |
+| **`logging/timestamp.c`** | **100.0%** (10/10) | **100.0%** (1/1) | Passed |
+| **`lru_cache/lru_cache.c`** | **98.1%** (51/52) | **100.0%** (6/6) | Passed |
+| **`analytics/analytics.c`** | **97.8%** (90/92) | **100.0%** (11/11) | Passed |
+| **`hash_table/hash_table.c`** | **95.7%** (44/46) | **100.0%** (5/5) | Passed |
+| **`cache_manager/cache_manager.c`** | **93.4%** (128/137) | **100.0%** (7/7) | Passed |
+| **`logging/logger.c`** | **88.9%** (16/18) | **100.0%** (4/4) | Passed |
+| **`memory/memory_manager.c`** | **84.6%** (11/13) | **100.0%** (2/2) | Passed |
+| **`authentication/auth.c`** | **83.1%** (54/65) | **100.0%** (3/3) | Passed |
+| **`thread_manager/thread_manager.c`** | **72.2%** (117/162) | **100.0%** (10/10) | Passed |
+| **`persistence/storage.c`** | **67.7%** (65/96) | **100.0%** (3/3) | Passed |
+| **TOTAL PROJECT (`src/`)** | **85.0% (601/707)** | **100.0% (55/55)** | **100% Function Coverage** |

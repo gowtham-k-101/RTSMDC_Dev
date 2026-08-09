@@ -22,6 +22,9 @@ static void test_getCurrentTimestamp(void)
 
     /* Test zero buffer size */
     CU_ASSERT_EQUAL(getCurrentTimestamp(buf, 0), -1);
+
+    /* Test too small buffer size */
+    CU_ASSERT_EQUAL(getCurrentTimestamp(buf, 2), -1);
 }
 
 int main(void)
