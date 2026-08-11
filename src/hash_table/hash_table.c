@@ -21,7 +21,7 @@
 
 Node *hashTable[TABLE_SIZE] = {NULL};
 
-unsigned int hashFunction(const char *symbol)
+static unsigned int hashFunction(const char *symbol)
 {
     unsigned int hash = 0;
 

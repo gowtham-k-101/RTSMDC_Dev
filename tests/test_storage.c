@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #include <CUnit/Basic.h>
 
 #include "persistence/storage.h"
@@ -43,6 +45,25 @@ static void test_storageAPIs(void)
 
     int backupResFail = backupCache();
     CU_ASSERT_EQUAL(backupResFail, -1);
+
+    /* Test fopen write failure paths using directory placement */
+    (void)remove("data/cache_data.dat");
+    if (mkdir("data/cache_data.dat", 0755) == 0)
+    {
+        CU_ASSERT_EQUAL(saveCache(), -1);
+        (void)rmdir("data/cache_data.dat");
+    }
+
+    (void)remove("data/backup.dat");
+    if (mkdir("data/backup.dat", 0755) == 0)
+    {
+        /* Re-create valid cache_data.dat for backup target fail test */
+        FILE *tmp = fopen("data/cache_data.dat", "w");
+        if (tmp != NULL) { fprintf(tmp, "TEST 1.0 1\n"); fclose(tmp); }
+        CU_ASSERT_EQUAL(backupCache(), -1);
+        (void)rmdir("data/backup.dat");
+        (void)remove("data/cache_data.dat");
+    }
 }
 
 int main(void)

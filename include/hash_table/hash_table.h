@@ -17,8 +17,6 @@
 
 extern Node *hashTable[TABLE_SIZE];
 
-unsigned int hashFunction(const char *symbol);
-
 int insertNode(Stock stock);
 
 Node* searchNode(const char *symbol);

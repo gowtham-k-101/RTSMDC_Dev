@@ -10,27 +10,49 @@
 
 static void test_validateSymbol(void)
 {
+    /* Valid symbols */
+    CU_ASSERT_TRUE(validateSymbol("A"));
     CU_ASSERT_TRUE(validateSymbol("AAPL"));
     CU_ASSERT_TRUE(validateSymbol("GOOG123"));
+    CU_ASSERT_TRUE(validateSymbol("ABCDEFGHIJKLMNO1234")); /* 19 chars */
+
+    /* Invalid symbols */
     CU_ASSERT_FALSE(validateSymbol(NULL));
     CU_ASSERT_FALSE(validateSymbol(""));
     CU_ASSERT_FALSE(validateSymbol("INVALID SYMBOL"));
     CU_ASSERT_FALSE(validateSymbol("THIS_SYMBOL_IS_WAY_TOO_LONG_FOR_THE_LIMIT"));
+    CU_ASSERT_FALSE(validateSymbol("AAPL@#$"));
+    CU_ASSERT_FALSE(validateSymbol("A B C"));
+    CU_ASSERT_FALSE(validateSymbol("AAPL\n"));
+    CU_ASSERT_FALSE(validateSymbol("AAPL\t"));
 }
 
 static void test_validatePrice(void)
 {
-    CU_ASSERT_TRUE(validatePrice(10.5f));
+    /* Valid prices */
     CU_ASSERT_TRUE(validatePrice(0.01f));
+    CU_ASSERT_TRUE(validatePrice(10.5f));
+    CU_ASSERT_TRUE(validatePrice(999999.99f));
+
+    /* Invalid prices */
     CU_ASSERT_FALSE(validatePrice(0.0f));
+    CU_ASSERT_FALSE(validatePrice(-0.01f));
     CU_ASSERT_FALSE(validatePrice(-5.0f));
+    CU_ASSERT_FALSE(validatePrice(-100000.0f));
 }
 
 static void test_validateVolume(void)
 {
-    CU_ASSERT_TRUE(validateVolume(100));
+    /* Valid volumes */
     CU_ASSERT_TRUE(validateVolume(0));
+    CU_ASSERT_TRUE(validateVolume(1));
+    CU_ASSERT_TRUE(validateVolume(100));
+    CU_ASSERT_TRUE(validateVolume(2147483647));
+
+    /* Invalid volumes */
     CU_ASSERT_FALSE(validateVolume(-1));
+    CU_ASSERT_FALSE(validateVolume(-100));
+    CU_ASSERT_FALSE(validateVolume(-2147483647));
 }
 
 int main(void)

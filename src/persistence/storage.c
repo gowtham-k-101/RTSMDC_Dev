@@ -28,7 +28,7 @@ int saveCache(void)
 {
     FILE *fp;
     int i;
-    Node *current;
+    const Node *current;
     int result = -1;
 
     if (cacheLock() != 0)

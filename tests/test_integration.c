@@ -50,8 +50,8 @@ static void test_endToEndWorkflow(void)
     recordMiss();
     CU_ASSERT_TRUE(getHitRatio() > 0.0f);
 
-    /* 3. Persistence Save & Load */
-    CU_ASSERT_EQUAL(saveCache(), 0);
+    /* 3. Asynchronous Persistence Request */
+    CU_ASSERT_EQUAL(requestCacheSaveAndWait(), 0);
     CU_ASSERT_EQUAL(backupCache(), 0);
 
     clearCache();
@@ -65,7 +65,25 @@ static void test_endToEndWorkflow(void)
     CU_ASSERT_EQUAL(logInfo("INTG_TEST", "Integration test step finished"), 0);
     CU_ASSERT_EQUAL(logStockOperation("INTG_TEST", "LOOKUP", "INTG1"), 0);
 
-    /* 5. Clean Shutdown */
+    /* 5. High-volume insertion and eviction integration test */
+    int i;
+    for (i = 0; i < 110; i++)
+    {
+        char sym[20];
+        snprintf(sym, sizeof(sym), "INTG_BULK_%d", i);
+        Stock st = {"", 15.0f + (float)i, 100 + i};
+        strncpy(st.symbol, sym, sizeof(st.symbol) - 1);
+
+        CU_ASSERT_EQUAL(cacheLock(), 0);
+        if (insertNode(st) == 1)
+        {
+            Node *node = searchNode(st.symbol);
+            if (node != NULL) { addToFront(node); }
+        }
+        CU_ASSERT_EQUAL(cacheUnlock(), 0);
+    }
+
+    /* 6. Clean Shutdown */
     clearCache();
     saveStatistics();
     CU_ASSERT_EQUAL(shutdownThreadManager(), 0);

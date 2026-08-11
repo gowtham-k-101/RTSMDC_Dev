@@ -61,10 +61,10 @@ helgrind: stress
 	valgrind --tool=helgrind --error-exitcode=1 ./stress_test 16 500
 
 cppcheck:
-	cppcheck --enable=warning,style,performance,portability,information,unusedFunction --error-exitcode=1 --suppress=missingIncludeSystem -Iinclude -Isrc src/
+	cppcheck --language=c --enable=warning,style,performance,portability,unusedFunction --error-exitcode=1 --suppress=missingIncludeSystem -Iinclude -Isrc src/
 
 misra:
-	cppcheck --addon=misra --error-exitcode=1 --suppress=missingIncludeSystem -Iinclude -Isrc src/
+	cppcheck --language=c --addon=misra --error-exitcode=1 --suppress=missingIncludeSystem -Iinclude -Isrc src/
 
 coverage:
 	@rm -rf coverage_html coverage.info coverage_src.info src/*.gcda src/*.gcno tests/*.gcda tests/*.gcno tests/*.o

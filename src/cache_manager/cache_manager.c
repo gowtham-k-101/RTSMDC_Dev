@@ -56,7 +56,7 @@ static int countCacheNodes(void)
 {
     int count = 0;
     int i;
-    Node *curr;
+    const Node *curr;
 
     for (i = 0; i < TABLE_SIZE; ++i)
     {
@@ -275,7 +275,7 @@ void deleteStock(void)
 void displayStocks(void)
 {
     int i;
-    Node *current;
+    const Node *current;
 
     (void)cacheLock();
 

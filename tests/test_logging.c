@@ -17,6 +17,19 @@ static void test_loggingFunctions(void)
     CU_ASSERT_EQUAL(logError("TEST_MOD", "Test error message"), 0);
     CU_ASSERT_EQUAL(logStockOperation("TEST_MOD", "ADD", "AAPL"), 0);
 
+    /* Empty string parameters */
+    CU_ASSERT_EQUAL(logInfo("", "Msg"), 0);
+    CU_ASSERT_EQUAL(logInfo("MOD", ""), 0);
+    CU_ASSERT_EQUAL(logStockOperation("MOD", "UPDATE", "GOOG"), 0);
+    CU_ASSERT_EQUAL(logStockOperation("MOD", "DELETE", "MSFT"), 0);
+
+    /* Very long messages */
+    char longMsg[300];
+    int i;
+    for (i = 0; i < 290; i++) { longMsg[i] = 'A'; }
+    longMsg[290] = '\0';
+    CU_ASSERT_EQUAL(logInfo("LONG_MOD", longMsg), 0);
+
     /* NULL parameters check */
     CU_ASSERT_EQUAL(logInfo(NULL, "Msg"), -1);
     CU_ASSERT_EQUAL(logInfo("MOD", NULL), -1);

@@ -115,7 +115,7 @@ Node* getLRUTail(void)
 
 void displayLRU(void)
 {
-    Node *current;
+    const Node *current;
 
     (void)cacheLock();
     current = lruHead;

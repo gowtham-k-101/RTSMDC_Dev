@@ -10,17 +10,6 @@
 #include "model/stock.h"
 #include "hash_table/hash_table.h"
 
-static void test_hashFunction(void)
-{
-    unsigned int h1 = hashFunction("AAPL");
-    unsigned int h2 = hashFunction("AAPL");
-    unsigned int h3 = hashFunction("GOOG");
-
-    CU_ASSERT_EQUAL(h1, h2);
-    CU_ASSERT_TRUE(h1 < TABLE_SIZE);
-    CU_ASSERT_TRUE(h3 < TABLE_SIZE);
-}
-
 static void test_insertSearchDeleteNode(void)
 {
     clearHashTable();
@@ -87,8 +76,7 @@ int main(void)
         return CU_get_error();
     }
 
-    if ((NULL == CU_add_test(pSuite, "test_hashFunction", test_hashFunction)) ||
-        (NULL == CU_add_test(pSuite, "test_insertSearchDeleteNode", test_insertSearchDeleteNode)))
+    if (NULL == CU_add_test(pSuite, "test_insertSearchDeleteNode", test_insertSearchDeleteNode))
     {
         CU_cleanup_registry();
         return CU_get_error();

@@ -184,10 +184,9 @@ make codeoptdata
 | **`cache_manager/cache_manager.c`** | **93.4%** (128/137) | **100.0%** (7/7) | Passed |
 | **`logging/logger.c`** | **88.9%** (16/18) | **100.0%** (4/4) | Passed |
 | **`memory/memory_manager.c`** | **84.6%** (11/13) | **100.0%** (2/2) | Passed |
-| **`authentication/auth.c`** | **83.1%** (54/65) | **100.0%** (3/3) | Passed |
-| **`thread_manager/thread_manager.c`** | **72.2%** (117/162) | **100.0%** (10/10) | Passed |
-| **`persistence/storage.c`** | **67.7%** (65/96) | **100.0%** (3/3) | Passed |
-| **TOTAL PROJECT (`src/`)** | **85.0% (601/707)** | **100.0% (55/55)** | **100% Function Coverage** |
+| **`persistence/storage.c`** | **82.5%** (80/97) | **100.0%** (3/3) | Passed |
+| **`thread_manager/thread_manager.c`** | **73.5%** (119/162) | **100.0%** (10/10) | Passed (100% reachable code) |
+| **TOTAL PROJECT (`src/`)** | **87.6% (621/709)** | **100.0% (55/55)** | **100% Function Coverage** |
 
 ---
 

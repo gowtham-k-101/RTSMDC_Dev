@@ -21,6 +21,22 @@ static void test_allocateAndFreeNode(void)
     }
 
     freeNode(NULL);
+
+    /* Mass allocation and deallocation loop */
+    Node *nodes[50];
+    int i;
+    for (i = 0; i < 50; i++)
+    {
+        nodes[i] = allocateNode();
+        CU_ASSERT_PTR_NOT_NULL(nodes[i]);
+    }
+    for (i = 0; i < 50; i++)
+    {
+        if (nodes[i] != NULL)
+        {
+            freeNode(nodes[i]);
+        }
+    }
 }
 
 int main(void)
