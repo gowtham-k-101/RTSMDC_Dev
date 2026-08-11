@@ -20,17 +20,17 @@ static void test_cacheManagerInteractive(void)
     if (fp != NULL)
     {
         /* 1. Add valid stock AAPL */
-        fprintf(fp, "AAPL\n150.00\n1000\n");
+        fprintf(fp, "AAPL\n150.00\n1000\nNASDAQ\n");
         /* 2. Add valid stock MSFT */
-        fprintf(fp, "MSFT\n250.00\n2000\n");
+        fprintf(fp, "MSFT\n250.00\n2000\nNASDAQ\n");
         /* 3. Add duplicate stock AAPL */
-        fprintf(fp, "AAPL\n150.00\n1000\n");
+        fprintf(fp, "AAPL\n150.00\n1000\nNASDAQ\n");
         /* 4. Add stock invalid symbol */
-        fprintf(fp, "123BAD\n150.00\n1000\n");
+        fprintf(fp, "123BAD\n150.00\n1000\nNASDAQ\n");
         /* 5. Add stock invalid price */
-        fprintf(fp, "GOOG\n-10.0\n1000\n");
+        fprintf(fp, "GOOG\n-10.0\n1000\nNASDAQ\n");
         /* 6. Add stock invalid volume */
-        fprintf(fp, "GOOG\n100.0\n-50\n");
+        fprintf(fp, "GOOG\n100.0\n-50\nNASDAQ\n");
 
         /* 7. Search existing AAPL */
         fprintf(fp, "AAPL\n");
@@ -94,7 +94,7 @@ static void test_cacheManagerEviction(void)
         int i;
         for (i = 0; i < 102; i++)
         {
-            fprintf(fp, "EVICT%d\n100.00\n500\n", i);
+            fprintf(fp, "EVICT%d\n100.00\n500\nNYSE\n", i);
         }
         fclose(fp);
     }

@@ -23,7 +23,7 @@ static pthread_t persistenceThread;
 static pthread_mutex_t logMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t logCond = PTHREAD_COND_INITIALIZER;
 
-static pthread_mutex_t cacheMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_rwlock_t cacheRWLock = PTHREAD_RWLOCK_INITIALIZER;
 
 static pthread_mutex_t persistenceMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t persistenceCond = PTHREAD_COND_INITIALIZER;
@@ -169,7 +169,7 @@ int initializeThreadManager(void)
     result = pthread_mutex_init(&persistenceMutex, NULL);
     if (result != 0)
     {
-        (void)pthread_mutex_destroy(&cacheMutex);
+        (void)pthread_rwlock_destroy(&cacheRWLock);
         (void)pthread_cond_destroy(&logCond);
         (void)pthread_mutex_destroy(&logMutex);
         return -1;
@@ -179,7 +179,7 @@ int initializeThreadManager(void)
     if (result != 0)
     {
         (void)pthread_mutex_destroy(&persistenceMutex);
-        (void)pthread_mutex_destroy(&cacheMutex);
+        (void)pthread_rwlock_destroy(&cacheRWLock);
         (void)pthread_cond_destroy(&logCond);
         (void)pthread_mutex_destroy(&logMutex);
         return -1;
@@ -190,7 +190,7 @@ int initializeThreadManager(void)
     {
         (void)pthread_cond_destroy(&persistenceCond);
         (void)pthread_mutex_destroy(&persistenceMutex);
-        (void)pthread_mutex_destroy(&cacheMutex);
+        (void)pthread_rwlock_destroy(&cacheRWLock);
         (void)pthread_cond_destroy(&logCond);
         (void)pthread_mutex_destroy(&logMutex);
         return -1;
@@ -202,7 +202,7 @@ int initializeThreadManager(void)
         (void)pthread_cond_destroy(&persistenceDoneCond);
         (void)pthread_cond_destroy(&persistenceCond);
         (void)pthread_mutex_destroy(&persistenceMutex);
-        (void)pthread_mutex_destroy(&cacheMutex);
+        (void)pthread_rwlock_destroy(&cacheRWLock);
         (void)pthread_cond_destroy(&logCond);
         (void)pthread_mutex_destroy(&logMutex);
         return -1;
@@ -221,7 +221,7 @@ int initializeThreadManager(void)
         (void)pthread_cond_destroy(&persistenceDoneCond);
         (void)pthread_cond_destroy(&persistenceCond);
         (void)pthread_mutex_destroy(&persistenceMutex);
-        (void)pthread_mutex_destroy(&cacheMutex);
+        (void)pthread_rwlock_destroy(&cacheRWLock);
         (void)pthread_cond_destroy(&logCond);
         (void)pthread_mutex_destroy(&logMutex);
         return -1;
@@ -248,7 +248,7 @@ int shutdownThreadManager(void)
     (void)pthread_cond_destroy(&persistenceDoneCond);
     (void)pthread_cond_destroy(&persistenceCond);
     (void)pthread_mutex_destroy(&persistenceMutex);
-    (void)pthread_mutex_destroy(&cacheMutex);
+    (void)pthread_rwlock_destroy(&cacheRWLock);
     (void)pthread_cond_destroy(&logCond);
     (void)pthread_mutex_destroy(&logMutex);
 
@@ -329,12 +329,22 @@ int requestCacheSaveAndWait(void)
     return result;
 }
 
+int cacheReadLock(void)
+{
+    return pthread_rwlock_rdlock(&cacheRWLock);
+}
+
+int cacheWriteLock(void)
+{
+    return pthread_rwlock_wrlock(&cacheRWLock);
+}
+
 int cacheLock(void)
 {
-    return pthread_mutex_lock(&cacheMutex);
+    return cacheWriteLock();
 }
 
 int cacheUnlock(void)
 {
-    return pthread_mutex_unlock(&cacheMutex);
+    return pthread_rwlock_unlock(&cacheRWLock);
 }

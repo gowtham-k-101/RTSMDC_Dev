@@ -26,9 +26,9 @@ static void test_endToEndWorkflow(void)
     clearCache();
 
     /* 1. Add Stock Items up to capacity */
-    Stock s1 = {"INTG1", 100.0f, 1000};
-    Stock s2 = {"INTG2", 200.0f, 2000};
-    Stock s3 = {"INTG3", 300.0f, 3000};
+    Stock s1 = {"INTG1", 10000, 9950, 10050, 1000, "NASDAQ"};
+    Stock s2 = {"INTG2", 20000, 19950, 20050, 2000, "NYSE"};
+    Stock s3 = {"INTG3", 30000, 29950, 30050, 3000, "AMEX"};
 
     CU_ASSERT_EQUAL(cacheLock(), 0);
     CU_ASSERT_EQUAL(insertNode(s1), 1);
@@ -71,7 +71,7 @@ static void test_endToEndWorkflow(void)
     {
         char sym[20];
         snprintf(sym, sizeof(sym), "INTG_BULK_%d", i);
-        Stock st = {"", 15.0f + (float)i, 100 + i};
+        Stock st = {"", (uint32_t)(1500 + i * 10), (uint32_t)(1490 + i * 10), (uint32_t)(1510 + i * 10), 100 + i, "NASDAQ"};
         strncpy(st.symbol, sym, sizeof(st.symbol) - 1);
 
         CU_ASSERT_EQUAL(cacheLock(), 0);

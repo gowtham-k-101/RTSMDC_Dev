@@ -26,6 +26,8 @@ int signalCacheSave(void);
 int requestCacheSaveAndWait(void);
 
 int cacheLock(void);
+int cacheReadLock(void);
+int cacheWriteLock(void);
 int cacheUnlock(void);
 
 #ifdef __cplusplus

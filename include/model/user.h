@@ -16,15 +16,20 @@
 enum
 {
     USERNAME_LENGTH = 50,
-    PASSWORD_LENGTH = 50
+    PASSWORD_LENGTH = 50,
+    SALT_LENGTH = 16,
+    HASH_LENGTH = 65,
+    ROLE_ADMIN = 1,
+    ROLE_OPERATOR = 2,
+    ROLE_VIEWER = 3
 };
 
 typedef struct
 {
     char username[USERNAME_LENGTH];
-
-    char password[PASSWORD_LENGTH];
-
+    char salt[SALT_LENGTH];
+    char password_hash[HASH_LENGTH];
+    int role;
 } User;
 
 #endif

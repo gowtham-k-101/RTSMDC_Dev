@@ -31,12 +31,37 @@
 static int g_totalThreads = DEFAULT_TOTAL_THREADS;
 static int g_opsPerThread = DEFAULT_OPS_PER_THREAD;
 
-static const char *TEST_SYMBOLS[] = {
-    "AAPL", "GOOGL", "MSFT", "AMZN", "TSLA",
-    "NVDA", "META",  "NFLX", "AMD",  "INTC",
-    "ORCL", "CSCO",  "IBM",  "QCOM", "TXN"
-};
-static const size_t NUM_SYMBOLS = sizeof(TEST_SYMBOLS) / sizeof(TEST_SYMBOLS[0]);
+static int countCacheNodes(void)
+{
+    int count = 0;
+    int i;
+    const Node *curr;
+
+    for (i = 0; i < TABLE_SIZE; ++i)
+    {
+        curr = hashTable[i];
+        while (curr != NULL)
+        {
+            count++;
+            curr = curr->hashNext;
+        }
+    }
+    return count;
+}
+
+static char g_symbols[120][SYMBOL_LENGTH];
+static int g_symbolsInitialized = 0;
+
+static void initSymbols(void)
+{
+    if (g_symbolsInitialized) return;
+    int i;
+    for (i = 0; i < 120; i++)
+    {
+        snprintf(g_symbols[i], sizeof(g_symbols[i]), "TICK%d", i);
+    }
+    g_symbolsInitialized = 1;
+}
 
 typedef struct {
     int threadId;
@@ -55,7 +80,6 @@ static void randomDelayUs(long maxUs)
     }
 }
 
-
 static void *readerThread(void *arg)
 {
     ThreadArgs *args = (ThreadArgs *)arg;
@@ -63,15 +87,14 @@ static void *readerThread(void *arg)
 
     for (i = 0; i < g_opsPerThread; ++i)
     {
-        const char *sym = TEST_SYMBOLS[(size_t)rand() % NUM_SYMBOLS];
-        Node *node;
+        const char *sym = g_symbols[(size_t)rand() % 120];
+        const Node *node;
 
-        (void)cacheLock();
+        (void)cacheReadLock();
         node = searchNode(sym);
         if (node != NULL)
         {
             recordHit();
-            moveToFront(node);
         }
         else
         {
@@ -96,21 +119,38 @@ static void *writerThread(void *arg)
 
     for (i = 0; i < g_opsPerThread; ++i)
     {
-        const char *sym = TEST_SYMBOLS[(size_t)rand() % NUM_SYMBOLS];
-        int action = rand() % 3;
+        const char *sym = g_symbols[(size_t)rand() % 120];
+        int action = rand() % 20;
 
-        (void)cacheLock();
+        (void)cacheWriteLock();
         Node *node = searchNode(sym);
 
-        if (action == 0) /* Insert / Add */
+        if (action < 12) /* Insert / Add */
         {
             if (node == NULL)
             {
+                if (countCacheNodes() >= CACHE_CAPACITY)
+                {
+                    Node *tail = getLRUTail();
+                    if (tail != NULL)
+                    {
+                        char evictSym[SYMBOL_LENGTH];
+                        strncpy(evictSym, tail->stock.symbol, sizeof(evictSym) - 1);
+                        evictSym[sizeof(evictSym) - 1] = '\0';
+                        removeFromLRU(tail);
+                        (void)deleteNode(evictSym);
+                        recordEviction();
+                    }
+                }
+
                 Stock s;
                 (void)strncpy(s.symbol, sym, SYMBOL_LENGTH - 1);
                 s.symbol[SYMBOL_LENGTH - 1] = '\0';
-                s.price = (float)(10.0 + (rand() % 5000) / 10.0);
+                s.price_cents = (uint32_t)(1000 + rand() % 50000);
+                s.bid_cents = s.price_cents - 5;
+                s.ask_cents = s.price_cents + 5;
                 s.volume = (int32_t)(100 + rand() % 10000);
+                (void)strncpy(s.exchange, "NASDAQ", sizeof(s.exchange) - 1);
 
                 if (insertNode(s) != 0)
                 {
@@ -128,11 +168,11 @@ static void *writerThread(void *arg)
                 recordUpdate();
             }
         }
-        else if (action == 1) /* Update */
+        else if (action < 18) /* Update */
         {
             if (node != NULL)
             {
-                node->stock.price = (float)(15.0 + (rand() % 4000) / 10.0);
+                node->stock.price_cents = (uint32_t)(1500 + rand() % 40000);
                 moveToFront(node);
                 recordUpdate();
             }
@@ -197,7 +237,7 @@ static void *loggerStatsThread(void *arg)
         }
         else if (i % 4 == 2)
         {
-            (void)logStockOperation("STRESS", "BULK_OP", TEST_SYMBOLS[(size_t)rand() % NUM_SYMBOLS]);
+            (void)logStockOperation("STRESS", "BULK_OP", g_symbols[(size_t)rand() % 120]);
         }
         else
         {
@@ -219,6 +259,8 @@ int main(int argc, char * const *argv)
     int i;
     pthread_t *threads;
     ThreadArgs **tArgs;
+
+    initSymbols();
 
     if (argc > 1)
     {

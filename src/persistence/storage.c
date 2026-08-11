@@ -36,7 +36,7 @@ int saveCache(void)
         return -1;
     }
 
-    fp = fopen(CACHE_FILE, "w");
+    fp = fopen(CACHE_FILE, "wb");
     if (fp == NULL)
     {
         logError("CACHE", "CACHE_SAVE_FAILED");
@@ -49,11 +49,7 @@ int saveCache(void)
 
         while (current != NULL)
         {
-            if (fprintf(fp,
-                        "%s %.2f %d\n",
-                        current->stock.symbol,
-                        current->stock.price,
-                        current->stock.volume) < 0)
+            if (fwrite(&current->stock, sizeof(Stock), 1, fp) != 1)
             {
                 goto cleanup;
             }
@@ -97,7 +93,7 @@ int loadCache(void)
         return -1;
     }
 
-    fp = fopen(CACHE_FILE, "r");
+    fp = fopen(CACHE_FILE, "rb");
     if (fp == NULL)
     {
         logError("CACHE", "CACHE_LOAD_FAILED");
@@ -108,11 +104,7 @@ int loadCache(void)
     clearHashTable();
     clearLRU();
 
-    while (fscanf(fp,
-                  "%19s %f %d",
-                  stock.symbol,
-                  &stock.price,
-                  &stock.volume) == 3)
+    while (fread(&stock, sizeof(Stock), 1, fp) == 1)
     {
         if (insertNode(stock) == 0)
         {
@@ -145,7 +137,7 @@ int backupCache(void)
         return -1;
     }
 
-    source = fopen(CACHE_FILE, "r");
+    source = fopen(CACHE_FILE, "rb");
     if (source == NULL)
     {
         logError("CACHE", "CACHE_BACKUP_FAILED");
@@ -154,7 +146,7 @@ int backupCache(void)
         return -1;
     }
 
-    destination = fopen(BACKUP_FILE, "w");
+    destination = fopen(BACKUP_FILE, "wb");
     if (destination == NULL)
     {
         logError("CACHE", "CACHE_BACKUP_FAILED");

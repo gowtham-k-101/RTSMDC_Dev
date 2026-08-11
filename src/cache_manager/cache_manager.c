@@ -73,6 +73,7 @@ static int countCacheNodes(void)
 void addStock(void)
 {
     Stock stock;
+    float inputPrice;
 
     printf("\nEnter Stock Symbol : ");
     if (scanf("%19s", stock.symbol) != 1)
@@ -80,16 +81,28 @@ void addStock(void)
         return;
     }
 
-    printf("Enter Stock Price : ");
-    if (scanf("%f", &stock.price) != 1)
+    printf("Enter Stock Price ($) : ");
+    if (scanf("%f", &inputPrice) != 1 || inputPrice <= 0.0f)
     {
+        printf("Invalid Price\n");
+        (void)logError("CACHE", "INVALID_PRICE");
         return;
     }
+    stock.price_cents = (uint32_t)(inputPrice * 100.0f + 0.5f);
+    stock.bid_cents = (uint32_t)((inputPrice - 0.05f > 0.0f ? inputPrice - 0.05f : inputPrice) * 100.0f + 0.5f);
+    stock.ask_cents = (uint32_t)((inputPrice + 0.05f) * 100.0f + 0.5f);
 
     printf("Enter Volume : ");
     if (scanf("%d", &stock.volume) != 1)
     {
         return;
+    }
+
+    printf("Enter Exchange (NASDAQ/NYSE/AMEX/CBOE) : ");
+    if (scanf("%7s", stock.exchange) != 1 || !validateExchange(stock.exchange))
+    {
+        (void)strncpy(stock.exchange, "NASDAQ", sizeof(stock.exchange) - 1);
+        stock.exchange[sizeof(stock.exchange) - 1] = '\0';
     }
 
     if (!validateSymbol(stock.symbol))
@@ -99,7 +112,7 @@ void addStock(void)
         return;
     }
 
-    if (!validatePrice(stock.price))
+    if (!validatePrice(stock.price_cents))
     {
         printf("Invalid Price\n");
         (void)logError("CACHE", "INVALID_PRICE");
@@ -113,9 +126,9 @@ void addStock(void)
         return;
     }
 
-    if (cacheLock() != 0)
+    if (cacheWriteLock() != 0)
     {
-        printf("Unable to acquire cache lock\n");
+        printf("Unable to acquire cache write lock\n");
         (void)logError("CACHE", "CACHE_LOCK_FAILED");
         return;
     }
@@ -155,7 +168,7 @@ void addStock(void)
 
         recordInsert();
         (void)logStockOperation("CACHE", "STOCK_ADD", stock.symbol);
-        printf("Stock Added Successfully\n");
+        printf("Stock Added Successfully (Exch: %s, Price: $%.2f)\n", stock.exchange, (float)stock.price_cents / 100.0f);
     }
 
     (void)cacheUnlock();
@@ -172,7 +185,7 @@ void searchStock(void)
         return;
     }
 
-    (void)cacheLock();
+    (void)cacheWriteLock();
     node = searchNode(symbol);
 
     if (node == NULL)
@@ -189,9 +202,11 @@ void searchStock(void)
     (void)logStockOperation("CACHE", "SEARCH_HIT", symbol);
 
     printf("\nStock Found\n");
-    printf("Symbol : %s\n", node->stock.symbol);
-    printf("Price  : %.2f\n", node->stock.price);
-    printf("Volume : %d\n", node->stock.volume);
+    printf("Symbol   : %s\n", node->stock.symbol);
+    printf("Exchange : %s\n", node->stock.exchange[0] ? node->stock.exchange : "NASDAQ");
+    printf("Price    : $%.2f (%u cents)\n", (float)node->stock.price_cents / 100.0f, node->stock.price_cents);
+    printf("Bid/Ask  : $%.2f / $%.2f\n", (float)node->stock.bid_cents / 100.0f, (float)node->stock.ask_cents / 100.0f);
+    printf("Volume   : %d\n", node->stock.volume);
 
     (void)cacheUnlock();
 }
@@ -199,7 +214,8 @@ void searchStock(void)
 void updateStock(void)
 {
     char symbol[SYMBOL_LENGTH];
-    float newPrice;
+    float inputPrice;
+    uint32_t newPriceCents;
     Node *node;
 
     printf("\nEnter Stock Symbol : ");
@@ -208,19 +224,21 @@ void updateStock(void)
         return;
     }
 
-    printf("Enter New Price : ");
-    if (scanf("%f", &newPrice) != 1)
+    printf("Enter New Price ($) : ");
+    if (scanf("%f", &inputPrice) != 1 || inputPrice <= 0.0f)
     {
+        printf("Invalid Price\n");
         return;
     }
+    newPriceCents = (uint32_t)(inputPrice * 100.0f + 0.5f);
 
-    if (!validatePrice(newPrice))
+    if (!validatePrice(newPriceCents))
     {
         printf("Invalid Price\n");
         return;
     }
 
-    (void)cacheLock();
+    (void)cacheWriteLock();
     node = searchNode(symbol);
 
     if (node == NULL)
@@ -230,7 +248,9 @@ void updateStock(void)
         return;
     }
 
-    node->stock.price = newPrice;
+    node->stock.price_cents = newPriceCents;
+    node->stock.bid_cents = (uint32_t)((inputPrice - 0.05f > 0.0f ? inputPrice - 0.05f : inputPrice) * 100.0f + 0.5f);
+    node->stock.ask_cents = (uint32_t)((inputPrice + 0.05f) * 100.0f + 0.5f);
     moveToFront(node);
     recordUpdate();
     (void)logStockOperation("CACHE", "STOCK_UPDATE", symbol);
@@ -250,7 +270,7 @@ void deleteStock(void)
         return;
     }
 
-    (void)cacheLock();
+    (void)cacheWriteLock();
     node = searchNode(symbol);
 
     if (node == NULL)
@@ -277,19 +297,21 @@ void displayStocks(void)
     int i;
     const Node *current;
 
-    (void)cacheLock();
+    (void)cacheReadLock();
 
     printf("\n");
-    printf("=========================================\n");
-    printf("             STOCK CACHE\n");
-    printf("=========================================\n");
+    printf("=======================================================================\n");
+    printf("                        REAL-TIME STOCK CACHE                          \n");
+    printf("=======================================================================\n");
 
-    printf("%-15s %-15s %-15s\n",
+    printf("%-10s %-10s %-12s %-16s %-12s\n",
            "SYMBOL",
-           "PRICE",
+           "EXCHANGE",
+           "PRICE ($)",
+           "BID / ASK ($)",
            "VOLUME");
 
-    printf("=========================================\n");
+    printf("=======================================================================\n");
 
     for (i = 0; i < TABLE_SIZE; i++)
     {
@@ -297,9 +319,16 @@ void displayStocks(void)
 
         while (current != NULL)
         {
-            printf("%-15s %-15.2f %-15d\n",
+            char spreadBuf[32];
+            (void)snprintf(spreadBuf, sizeof(spreadBuf), "%.2f / %.2f",
+                           (float)current->stock.bid_cents / 100.0f,
+                           (float)current->stock.ask_cents / 100.0f);
+
+            printf("%-10s %-10s $%-11.2f %-16s %-12d\n",
                    current->stock.symbol,
-                   current->stock.price,
+                   current->stock.exchange[0] ? current->stock.exchange : "NASDAQ",
+                   (float)current->stock.price_cents / 100.0f,
+                   spreadBuf,
                    current->stock.volume);
 
             current = current->hashNext;
@@ -311,7 +340,7 @@ void displayStocks(void)
 
 void clearCache(void)
 {
-    (void)cacheLock();
+    (void)cacheWriteLock();
     clearLRU();
     clearHashTable();
     (void)cacheUnlock();

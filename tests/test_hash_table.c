@@ -14,8 +14,8 @@ static void test_insertSearchDeleteNode(void)
 {
     clearHashTable();
 
-    Stock s1 = {"AAPL", 150.5f, 1000};
-    Stock s2 = {"GOOG", 2800.0f, 500};
+    Stock s1 = {"AAPL", 15050, 15000, 15100, 1000, "NASDAQ"};
+    Stock s2 = {"GOOG", 280000, 279900, 280100, 500, "NASDAQ"};
 
     CU_ASSERT_EQUAL(insertNode(s1), 1);
     CU_ASSERT_EQUAL(insertNode(s2), 1);
@@ -25,7 +25,7 @@ static void test_insertSearchDeleteNode(void)
     if (found1 != NULL)
     {
         CU_ASSERT_STRING_EQUAL(found1->stock.symbol, "AAPL");
-        CU_ASSERT_DOUBLE_EQUAL(found1->stock.price, 150.5f, 0.01f);
+        CU_ASSERT_EQUAL(found1->stock.price_cents, 15050);
     }
 
     Node *found2 = searchNode("GOOG");
@@ -45,7 +45,7 @@ static void test_insertSearchDeleteNode(void)
     for (k = 0; k < 50; k++)
     {
         snprintf(symBuf, sizeof(symBuf), "STK%d", k);
-        Stock st = {"", 10.0f + (float)k, 100 + k};
+        Stock st = {"", (uint32_t)(1000 + k * 10), (uint32_t)(990 + k * 10), (uint32_t)(1010 + k * 10), 100 + k, "NYSE"};
         strncpy(st.symbol, symBuf, sizeof(st.symbol) - 1);
         (void)insertNode(st);
     }

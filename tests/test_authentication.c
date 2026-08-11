@@ -17,15 +17,15 @@ static void test_registerAndLoginUser(void)
     FILE *fp = fopen("tests_auth_input.txt", "w");
     if (fp != NULL)
     {
-        /* 1. Register valid user 1 */
-        fprintf(fp, "testuser1\npass1234\n");
-        /* 2. Register valid user 2 */
-        fprintf(fp, "testuser2\npass5678\n");
+        /* 1. Register valid user 1 (Admin - role 1) */
+        fprintf(fp, "testuser1\npass1234\n1\n");
+        /* 2. Register valid user 2 (Operator - role 2) */
+        fprintf(fp, "testuser2\npass5678\n2\n");
         /* 3. Register duplicate user */
         fprintf(fp, "testuser1\n");
-        /* 4. Login valid user 1 */
+        /* 4. Login valid user 1 (returns role 1) */
         fprintf(fp, "testuser1\npass1234\n");
-        /* 5. Login valid user 2 */
+        /* 5. Login valid user 2 (returns role 2) */
         fprintf(fp, "testuser2\npass5678\n");
         /* 6. Login wrong password */
         fprintf(fp, "testuser1\nwrongpass\n");
@@ -49,10 +49,10 @@ static void test_registerAndLoginUser(void)
         CU_ASSERT_EQUAL(dupResult, 0);
 
         int loginResult1 = loginUser();
-        CU_ASSERT_EQUAL(loginResult1, 1);
+        CU_ASSERT_EQUAL(loginResult1, 1); /* Role Admin */
 
         int loginResult2 = loginUser();
-        CU_ASSERT_EQUAL(loginResult2, 1);
+        CU_ASSERT_EQUAL(loginResult2, 2); /* Role Operator */
 
         int wrongPassResult = loginUser();
         CU_ASSERT_EQUAL(wrongPassResult, 0);

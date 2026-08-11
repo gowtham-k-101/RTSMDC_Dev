@@ -20,6 +20,26 @@
 static const char USER_FILE[] = "data/users.dat";
 static pthread_mutex_t userMutex = PTHREAD_MUTEX_INITIALIZER;
 
+static void hashPassword(const char *password, const char *salt, char *outputHash)
+{
+    unsigned long hash = 5381;
+    int c;
+    const char *p;
+
+    for (p = salt; *p; p++)
+    {
+        c = (unsigned char)*p;
+        hash = ((hash << 5) + hash) + (unsigned long)c;
+    }
+    for (p = password; *p; p++)
+    {
+        c = (unsigned char)*p;
+        hash = ((hash << 5) + hash) + (unsigned long)c;
+    }
+
+    (void)snprintf(outputHash, HASH_LENGTH, "%016lx%016lx", hash, (unsigned long)(hash ^ 0xA5A5A5A55A5A5A5AUL));
+}
+
 static int userExists(const char *username)
 {
     FILE *fp;
@@ -32,7 +52,7 @@ static int userExists(const char *username)
         return 0;
     }
 
-    while (fscanf(fp, "%49s %49s", user.username, user.password) == 2)
+    while (fscanf(fp, "%49s %15s %64s %d", user.username, user.salt, user.password_hash, &user.role) == 4)
     {
         if (strcmp(user.username, username) == 0)
         {
@@ -49,6 +69,7 @@ int registerUser(void)
 {
     FILE *fp;
     User user;
+    char rawPassword[PASSWORD_LENGTH];
     int result = 0;
 
     printf("\n========== USER REGISTRATION ==========\n");
@@ -69,10 +90,19 @@ int registerUser(void)
     (void)pthread_mutex_unlock(&userMutex);
 
     printf("Enter Password : ");
-    if (scanf("%49s", user.password) != 1)
+    if (scanf("%49s", rawPassword) != 1)
     {
         return 0;
     }
+
+    printf("Select Role (1: Admin, 2: Operator, 3: Viewer) : ");
+    if (scanf("%d", &user.role) != 1 || user.role < 1 || user.role > 3)
+    {
+        user.role = ROLE_VIEWER;
+    }
+
+    (void)snprintf(user.salt, sizeof(user.salt), "s%08x", (unsigned int)strlen(user.username) + 12345);
+    hashPassword(rawPassword, user.salt, user.password_hash);
 
     (void)pthread_mutex_lock(&userMutex);
     fp = fopen(USER_FILE, "a");
@@ -83,9 +113,10 @@ int registerUser(void)
         return 0;
     }
 
-    if (fprintf(fp, "%s %s\n", user.username, user.password) >= 0)
+    if (fprintf(fp, "%s %s %s %d\n", user.username, user.salt, user.password_hash, user.role) >= 0)
     {
-        printf("Registration Successful\n");
+        printf("Registration Successful (Role: %s)\n",
+               user.role == ROLE_ADMIN ? "Admin" : (user.role == ROLE_OPERATOR ? "Operator" : "Viewer"));
         result = 1;
     }
     else
@@ -105,7 +136,8 @@ int loginUser(void)
     User user;
     char username[USERNAME_LENGTH];
     char password[PASSWORD_LENGTH];
-    int success = 0;
+    char computedHash[HASH_LENGTH];
+    int authenticatedRole = 0;
 
     printf("\n========== USER LOGIN ==========\n");
 
@@ -131,27 +163,31 @@ int loginUser(void)
         return 0;
     }
 
-    while (fscanf(fp, "%49s %49s", user.username, user.password) == 2)
+    while (fscanf(fp, "%49s %15s %64s %d", user.username, user.salt, user.password_hash, &user.role) == 4)
     {
-        if ((strcmp(username, user.username) == 0) &&
-            (strcmp(password, user.password) == 0))
+        if (strcmp(username, user.username) == 0)
         {
-            success = 1;
-            break;
+            hashPassword(password, user.salt, computedHash);
+            if (strcmp(computedHash, user.password_hash) == 0)
+            {
+                authenticatedRole = user.role;
+                break;
+            }
         }
     }
 
     (void)fclose(fp);
     (void)pthread_mutex_unlock(&userMutex);
 
-    if (success != 0)
+    if (authenticatedRole != 0)
     {
-        printf("Login Successful\n");
+        printf("Login Successful (Role: %s)\n",
+               authenticatedRole == ROLE_ADMIN ? "Admin" : (authenticatedRole == ROLE_OPERATOR ? "Operator" : "Viewer"));
     }
     else
     {
         printf("Invalid Username Or Password\n");
     }
 
-    return success;
+    return authenticatedRole;
 }

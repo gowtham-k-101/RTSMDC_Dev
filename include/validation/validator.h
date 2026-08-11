@@ -18,8 +18,10 @@
 
 bool validateSymbol(const char *symbol);
 
-bool validatePrice(float price);
+bool validatePrice(uint32_t price_cents);
 
 bool validateVolume(int32_t volume);
+
+bool validateExchange(const char *exchange);
 
 #endif

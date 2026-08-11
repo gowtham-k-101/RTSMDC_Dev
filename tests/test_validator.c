@@ -29,16 +29,13 @@ static void test_validateSymbol(void)
 
 static void test_validatePrice(void)
 {
-    /* Valid prices */
-    CU_ASSERT_TRUE(validatePrice(0.01f));
-    CU_ASSERT_TRUE(validatePrice(10.5f));
-    CU_ASSERT_TRUE(validatePrice(999999.99f));
+    /* Valid prices in cents */
+    CU_ASSERT_TRUE(validatePrice(1));
+    CU_ASSERT_TRUE(validatePrice(1050));
+    CU_ASSERT_TRUE(validatePrice(99999999));
 
     /* Invalid prices */
-    CU_ASSERT_FALSE(validatePrice(0.0f));
-    CU_ASSERT_FALSE(validatePrice(-0.01f));
-    CU_ASSERT_FALSE(validatePrice(-5.0f));
-    CU_ASSERT_FALSE(validatePrice(-100000.0f));
+    CU_ASSERT_FALSE(validatePrice(0));
 }
 
 static void test_validateVolume(void)
@@ -53,6 +50,18 @@ static void test_validateVolume(void)
     CU_ASSERT_FALSE(validateVolume(-1));
     CU_ASSERT_FALSE(validateVolume(-100));
     CU_ASSERT_FALSE(validateVolume(-2147483647));
+}
+
+static void test_validateExchange(void)
+{
+    CU_ASSERT_TRUE(validateExchange("NASDAQ"));
+    CU_ASSERT_TRUE(validateExchange("NYSE"));
+    CU_ASSERT_TRUE(validateExchange("AMEX"));
+    CU_ASSERT_TRUE(validateExchange("CBOE"));
+
+    CU_ASSERT_FALSE(validateExchange(NULL));
+    CU_ASSERT_FALSE(validateExchange(""));
+    CU_ASSERT_FALSE(validateExchange("INVALID_EXCH"));
 }
 
 int main(void)
@@ -73,7 +82,8 @@ int main(void)
 
     if ((NULL == CU_add_test(pSuite, "test_validateSymbol", test_validateSymbol)) ||
         (NULL == CU_add_test(pSuite, "test_validatePrice", test_validatePrice)) ||
-        (NULL == CU_add_test(pSuite, "test_validateVolume", test_validateVolume)))
+        (NULL == CU_add_test(pSuite, "test_validateVolume", test_validateVolume)) ||
+        (NULL == CU_add_test(pSuite, "test_validateExchange", test_validateExchange)))
     {
         CU_cleanup_registry();
         return CU_get_error();

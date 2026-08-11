@@ -18,15 +18,18 @@
 enum
 {
     TABLE_SIZE = 101,
-    CACHE_CAPACITY = 10,
+    CACHE_CAPACITY = 100,
     SYMBOL_LENGTH = 20
 };
 
 typedef struct
 {
     char symbol[SYMBOL_LENGTH];
-    float price;
+    uint32_t price_cents;
+    uint32_t bid_cents;
+    uint32_t ask_cents;
     int32_t volume;
+    char exchange[8];
 } Stock;
 
 typedef struct Node

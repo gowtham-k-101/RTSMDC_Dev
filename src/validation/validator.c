@@ -47,12 +47,30 @@ bool validateSymbol(const char *symbol)
     return true;
 }
 
-bool validatePrice(float price)
+bool validatePrice(uint32_t price_cents)
 {
-    return (price > 0.0f);
+    return (price_cents > 0);
 }
 
 bool validateVolume(int32_t volume)
 {
     return (volume >= 0);
+}
+
+bool validateExchange(const char *exchange)
+{
+    if (exchange == NULL)
+    {
+        return false;
+    }
+    if (strlen(exchange) == 0 || strlen(exchange) >= 8)
+    {
+        return false;
+    }
+    if (strcmp(exchange, "NASDAQ") == 0 || strcmp(exchange, "NYSE") == 0 ||
+        strcmp(exchange, "AMEX") == 0 || strcmp(exchange, "CBOE") == 0)
+    {
+        return true;
+    }
+    return false;
 }

@@ -18,7 +18,7 @@ static void test_storageAPIs(void)
     clearHashTable();
     clearLRU();
 
-    Stock s = {"SAVE_TEST", 123.45f, 500};
+    Stock s = {"SAVE_TEST", 12345, 12300, 12400, 500, "NASDAQ"};
     (void)insertNode(s);
     Node *n = searchNode("SAVE_TEST");
     if (n != NULL)
@@ -58,8 +58,8 @@ static void test_storageAPIs(void)
     if (mkdir("data/backup.dat", 0755) == 0)
     {
         /* Re-create valid cache_data.dat for backup target fail test */
-        FILE *tmp = fopen("data/cache_data.dat", "w");
-        if (tmp != NULL) { fprintf(tmp, "TEST 1.0 1\n"); fclose(tmp); }
+        FILE *tmp = fopen("data/cache_data.dat", "wb");
+        if (tmp != NULL) { fwrite(&s, sizeof(Stock), 1, tmp); fclose(tmp); }
         CU_ASSERT_EQUAL(backupCache(), -1);
         (void)rmdir("data/backup.dat");
         (void)remove("data/cache_data.dat");
