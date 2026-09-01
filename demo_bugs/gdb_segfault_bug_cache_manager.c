@@ -1,8 +1,17 @@
 /*
- * RTSMDC_Dev - ORIGINAL CLEAN FILE FOR EASY RESTORE
- * Source Location: src/cache_manager/cache_manager.c
+ * RTSMDC_Dev - DEMO BUG FILE FOR GDB
+ * Target Module: src/cache_manager/cache_manager.c
  * 
- * 100% Clean Code: Passing all unit tests, thread-safe, zero null dereferences.
+ * BUG INTRODUCED:
+ * Lines 191-198: The NULL check 'if (node == NULL) return;' is commented out inside searchStock().
+ * When a user searches for a stock symbol that does not exist in memory cache, searchNode()
+ * returns NULL (0x0). Code proceeds directly to access node->stock.symbol, triggering a
+ * hardware Segmentation Fault (SIGSEGV).
+ * 
+ * EXPECTED GDB OUTPUT:
+ * - Catches 'Program received signal SIGSEGV, Segmentation fault.'
+ * - 'p node' displays '$1 = (Node *) 0x0'
+ * - 'bt' displays call stack leading up to searchStock() line 205.
  */
 #include <stdio.h>
 #include <string.h>
@@ -152,6 +161,11 @@ void searchStock(void)
     (void)cacheWriteLock();
     node = searchNode(symbol);
 
+    /* ========================================================================= */
+    /* BUG INTRODUCED FOR GDB DEMO:                                              */
+    /* NULL check commented out -> Dereferencing node (0x0) causes SIGSEGV crash */
+    /* ========================================================================= */
+    /*
     if (node == NULL)
     {
         recordMiss();
@@ -160,12 +174,14 @@ void searchStock(void)
         printf("Stock Not Found\n");
         return;
     }
+    */
 
     recordHit();
     moveToFront(node);
     (void)logStockOperation("CACHE", "SEARCH_HIT", symbol);
 
     printf("\nStock Found\n");
+    /* Direct dereference of NULL node pointer */
     printf("Symbol   : %s\n", node->stock.symbol);
     printf("Exchange : %s\n", node->stock.exchange[0] ? node->stock.exchange : "NASDAQ");
     printf("Price    : $%.2f (%u cents)\n", (float)node->stock.price_cents / 100.0f, node->stock.price_cents);

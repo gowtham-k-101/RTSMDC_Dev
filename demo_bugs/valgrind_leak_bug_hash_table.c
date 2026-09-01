@@ -1,8 +1,15 @@
 /*
- * RTSMDC_Dev - ORIGINAL CLEAN FILE FOR EASY RESTORE
- * Source Location: src/hash_table/hash_table.c
+ * RTSMDC_Dev - DEMO BUG FILE FOR VALGRIND
+ * Target Module: src/hash_table/hash_table.c
  * 
- * 100% Clean Code: Passing all unit tests, zero memory leaks.
+ * BUG INTRODUCED:
+ * Line 130: 'freeNode(current);' is commented out inside deleteNode().
+ * When stocks are evicted or deleted, node pointers are removed from the bucket
+ * chain, but the memory allocated on heap via malloc() is never freed.
+ * 
+ * EXPECTED VALGRIND OUTPUT:
+ * - Flags "definitely lost: X bytes in Y blocks"
+ * - Pinpoints call stack: allocateNode -> insertNode -> writerThread
  */
 #include <stdio.h>
 #include <string.h>
@@ -121,7 +128,10 @@ int deleteNode(const char *symbol)
                 previous->hashNext = current->hashNext;
             }
 
-            freeNode(current);
+            /* ========================================================= */
+            /* BUG INTRODUCED FOR VALGRIND DEMO:                         */
+            /* freeNode(current); <-- COMMENTED OUT TO LEAK HEAP MEMORY  */
+            /* ========================================================= */
 
             return 1;
         }
