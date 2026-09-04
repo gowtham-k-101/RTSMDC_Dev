@@ -1,5 +1,14 @@
 /*
- * CUnit test suite for timestamp module
+ * RTSMDC_Dev
+ * CUnit test suite for timestamp module (test_timestamp.c)
+ *
+ * Unit tests for ISO timestamp string generation, NULL buffer checks, and buffer capacity validation.
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded test harness.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>

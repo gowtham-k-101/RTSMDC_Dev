@@ -2,10 +2,10 @@
  * RTSMDC_Dev
  * Analytics subsystem (analytics.c)
  *
- * Statistics tracking and cache performance recording.
+ * Cache statistics tracking, hit ratio calculation, and persistence.
  *
  * Thread ownership / synchronization:
- *   - Stateless operations; no thread ownership.
+ *   - Operations protected by global cache RW locks or atomic updates.
  *
  * Public APIs:
  *   - Implementation of module services.

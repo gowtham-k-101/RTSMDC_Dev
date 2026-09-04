@@ -2,10 +2,10 @@
  * RTSMDC_Dev
  * Logging subsystem (logger.c)
  *
- * Log entry formatting and enqueueing for asynchronous log writer.
+ * Log entry formatting and thread-safe enqueueing for asynchronous background log writer.
  *
  * Thread ownership / synchronization:
- *   - Thread ownership: main/worker threads enqueue entries; log thread performs file writes via thread_manager.
+ *   - Enqueues entries into thread_manager ring buffer queue safely.
  *
  * Public APIs:
  *   - Implementation of module services.

@@ -42,7 +42,7 @@ TEST_BINARIES = tests/test_validator \
     tests/test_integration
 
 
-.PHONY: all app stress test valgrind helgrind cppcheck misra clean codeoptfile codeoptdata coverage
+.PHONY: all app stress test valgrind helgrind cppcheck misra clean codeoptfile codeoptdata coverage gcov
 all: app stress
 
 app: $(APP_OBJECTS)
@@ -82,6 +82,10 @@ coverage:
 	@echo "========================================================================"
 	@echo ""
 
+gcov:
+	@rm -rf coverage_html coverage.info coverage_src.info *.gcda *.gcno *.gcov src/*.gcda src/*.gcno src/*/*.gcda src/*/*.gcno tests/*.gcda tests/*.gcno tests/*.gcov tests/*.o
+	@cd tests && COVERAGE=1 ./compile_tests.sh > /dev/null 2>&1 && ./run_tests.sh > /dev/null 2>&1 && gcov -b -o . ../src/analytics/analytics.c ../src/authentication/auth.c ../src/cache_manager/cache_manager.c ../src/hash_table/hash_table.c ../src/logging/logger.c ../src/logging/timestamp.c ../src/lru_cache/lru_cache.c ../src/memory/memory_manager.c ../src/persistence/storage.c ../src/thread_manager/thread_manager.c ../src/validation/validator.c | python3 ../tests/parse_gcov.py
+
 codeoptfile:
 	@for opt in O0 O1 O2 O3 Os; do \
 		echo "Compiling assembly (.s) and binaries for -$$opt..."; \
@@ -118,7 +122,7 @@ codeoptdata:
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(APP_OBJECTS) $(STRESS_OBJECTS) $(APP) $(STRESS_APP) $(TEST_BINARIES) tests/*.o app_O*.s app_O0 app_O1 app_O2 app_O3 app_Os stress_O0 stress_O1 stress_O2 stress_O3 stress_Os coverage_html coverage.info coverage_src.info *.gcda *.gcno src/*.gcda src/*.gcno src/*/*.gcda src/*/*.gcno tests/*.gcda tests/*.gcno tests_*.txt
+	rm -rf $(APP_OBJECTS) $(STRESS_OBJECTS) $(APP) $(STRESS_APP) $(TEST_BINARIES) tests/*.o app_O*.s app_O0 app_O1 app_O2 app_O3 app_Os stress_O0 stress_O1 stress_O2 stress_O3 stress_Os coverage_html coverage.info coverage_src.info *.gcda *.gcno *.gcov src/*.gcda src/*.gcno src/*/*.gcda src/*/*.gcno tests/*.gcda tests/*.gcno tests/*.gcov tests_*.txt
 
 
 

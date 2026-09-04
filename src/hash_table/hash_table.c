@@ -1,8 +1,14 @@
 /*
- * RTSMDC_Dev - ORIGINAL CLEAN FILE FOR EASY RESTORE
- * Source Location: src/hash_table/hash_table.c
- * 
- * 100% Clean Code: Passing all unit tests, zero memory leaks.
+ * RTSMDC_Dev
+ * Hash table storage module (hash_table.c)
+ *
+ * Hash-based stock symbol lookup, insertion, deletion, and chained collision handling.
+ *
+ * Thread ownership / synchronization:
+ *   - No internal synchronization; caller must acquire cache RW locks.
+ *
+ * Public APIs:
+ *   - Implementation of module services.
  */
 #include <stdio.h>
 #include <string.h>

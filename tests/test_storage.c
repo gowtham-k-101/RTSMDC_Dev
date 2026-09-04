@@ -1,5 +1,14 @@
 /*
- * CUnit test suite for storage / persistence module
+ * RTSMDC_Dev
+ * CUnit test suite for storage persistence module (test_storage.c)
+ *
+ * Unit tests for binary saveCache(), loadCache(), backupCache(), missing files, and disk errors.
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded test harness.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>

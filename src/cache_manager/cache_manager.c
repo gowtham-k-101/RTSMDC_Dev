@@ -1,8 +1,14 @@
 /*
- * RTSMDC_Dev - ORIGINAL CLEAN FILE FOR EASY RESTORE
- * Source Location: src/cache_manager/cache_manager.c
- * 
- * 100% Clean Code: Passing all unit tests, thread-safe, zero null dereferences.
+ * RTSMDC_Dev
+ * Cache manager module (cache_manager.c)
+ *
+ * Public stock cache operations, user CLI commands, and LRU evictions.
+ *
+ * Thread ownership / synchronization:
+ *   - Acquires cacheWriteLock() / cacheReadLock() for thread-safe cache access.
+ *
+ * Public APIs:
+ *   - Implementation of module services.
  */
 #include <stdio.h>
 #include <string.h>

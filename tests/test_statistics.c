@@ -1,5 +1,14 @@
 /*
- * CUnit test suite for analytics / statistics module
+ * RTSMDC_Dev
+ * CUnit test suite for analytics module (test_statistics.c)
+ *
+ * Unit tests for hit/miss recording, hit ratio calculation, statistics disk save/load, and corruption handling.
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded test harness.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>

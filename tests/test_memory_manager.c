@@ -1,5 +1,14 @@
 /*
- * CUnit test suite for memory manager module
+ * RTSMDC_Dev
+ * CUnit test suite for memory manager module (test_memory_manager.c)
+ *
+ * Unit tests for allocateNode(), freeNode(), NULL pointer safety, and mass allocation stress loops.
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded test harness.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>

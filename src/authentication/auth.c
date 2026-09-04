@@ -2,10 +2,10 @@
  * RTSMDC_Dev
  * User authentication module (auth.c)
  *
- * User registration and login support.
+ * Salted password hashing, user registration, and Role-Based Access Control (RBAC).
  *
  * Thread ownership / synchronization:
- *   - Stateless functions; no internal synchronization.
+ *   - File storage accesses protected by internal userMutex.
  *
  * Public APIs:
  *   - Implementation of module services.

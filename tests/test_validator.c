@@ -1,5 +1,14 @@
 /*
- * CUnit test suite for validator module
+ * RTSMDC_Dev
+ * CUnit test suite for validator module (test_validator.c)
+ *
+ * Unit tests for validateSymbol(), validatePrice(), validateVolume(), and validateExchange().
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded test harness.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>

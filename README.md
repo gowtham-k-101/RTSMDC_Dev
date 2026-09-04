@@ -130,6 +130,7 @@ RTSMDC_Dev/
 | Command | Description |
 | :--- | :--- |
 | **`make test`** | Compiles and executes the complete 12-suite CUnit unit and integration test framework. |
+| **`make gcov`** | Instruments source files with `--coverage`, executes all CUnit test suites, and displays a formatted 5-column terminal ASCII table showing Line, Branch, Branch Taken, and Call Coverage percentages and counts. |
 | **`make coverage`** | Instruments binaries with GCC `--coverage`, runs all test suites, captures `lcov` data, generates an interactive visual HTML report (`coverage_html/index.html`), and displays line/function coverage statistics. |
 | **`make valgrind`** | Runs the stress test binary under Valgrind to verify zero memory leaks. |
 | **`make helgrind`** | Runs the stress test binary under Valgrind's Helgrind tool to verify 100% thread race-free execution. |
@@ -162,14 +163,43 @@ make clean && make stress
 ./stress_test 16 1000
 ```
 
-### 3. Generating Code Coverage Report
+### 3. Running Direct Terminal GCOV Coverage Report
+Run GCC `gcov` directly to display a formatted terminal table showing Line, Branch, and Call Coverage:
+```bash
+make gcov
+```
+
+Example Terminal Output Table:
+```text
+=========================================================================================================
+                                RTSMDC_Dev Terminal GCOV Coverage Report                                 
+=========================================================================================================
+Source File          | Line Coverage      | Branch Coverage    | Branch Taken       | Call Coverage     
+---------------------------------------------------------------------------------------------------------
+analytics.c          | 97.83% (90/92)     | 100.00% (10/10)    | 80.00% (8/10)      | 97.73% (43/44)    
+auth.c               | 87.95% (73/83)     | 100.00% (48/48)    | 79.17% (38/48)     | 87.50% (35/40)    
+cache_manager.c      | 72.61% (114/157)   | 87.88% (58/66)     | 59.09% (39/66)     | 70.71% (70/99)    
+hash_table.c         | 97.83% (45/46)     | 100.00% (18/18)    | 94.44% (17/18)     | 100.00% (6/6)     
+logger.c             | 94.12% (16/17)     | 100.00% (14/14)    | 85.71% (12/14)     | 100.00% (5/5)     
+timestamp.c          | 83.33% (10/12)     | 100.00% (10/10)    | 80.00% (8/10)      | 100.00% (2/2)     
+lru_cache.c          | 94.23% (49/52)     | 100.00% (24/24)    | 83.33% (20/24)     | 100.00% (7/7)     
+memory_manager.c     | 84.62% (11/13)     | 100.00% (4/4)      | 50.00% (2/4)       | 0.00% (0/1)       
+storage.c            | 81.72% (76/93)     | 100.00% (42/42)    | 69.05% (29/42)     | 88.64% (39/44)    
+thread_manager.c     | 74.10% (123/166)   | 100.00% (56/56)    | 73.21% (41/56)     | 62.20% (51/82)    
+validator.c          | 95.83% (23/24)     | 100.00% (24/24)    | 95.83% (23/24)     | N/A               
+=========================================================================================================
+ TOTAL SYSTEM LINE COVERAGE: 83.44% (630/755)
+=========================================================================================================
+```
+
+### 4. Generating Visual HTML Code Coverage Report
 ```bash
 make coverage
 ```
 View the generated visual HTML report in your browser:
 [coverage_html/index.html](file:///home/gowtham/Documents/cpoc/RTSMDC_Dev/coverage_html/index.html)
 
-### 4. Running Code Optimization Analysis
+### 5. Running Code Optimization Analysis
 ```bash
 make codeoptdata
 ```

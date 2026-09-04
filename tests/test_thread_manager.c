@@ -1,5 +1,14 @@
 /*
- * CUnit test suite for thread manager module
+ * RTSMDC_Dev
+ * CUnit test suite for thread manager module (test_thread_manager.c)
+ *
+ * Unit tests for thread pool lifecycle, RW locks, async log queueing, sync cache save, and shutdown.
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded and multi-threaded test environment.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>

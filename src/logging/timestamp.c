@@ -1,11 +1,11 @@
 /*
  * RTSMDC_Dev
- * Logging subsystem (timestamp.c)
+ * Timestamp module (timestamp.c)
  *
- * Log entry formatting and enqueueing for asynchronous log writer.
+ * High-resolution ISO timestamp generation (YYYY-MM-DD HH:MM:SS) for application audit logs.
  *
  * Thread ownership / synchronization:
- *   - Thread ownership: main/worker threads enqueue entries; log thread performs file writes via thread_manager.
+ *   - Stateless and thread-safe.
  *
  * Public APIs:
  *   - Implementation of module services.

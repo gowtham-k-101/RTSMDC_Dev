@@ -1,5 +1,14 @@
 /*
- * CUnit test suite for authentication module
+ * RTSMDC_Dev
+ * CUnit test suite for authentication module (test_authentication.c)
+ *
+ * Unit tests for user registration, salted hashing, login validation, and RBAC roles.
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded test harness.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>

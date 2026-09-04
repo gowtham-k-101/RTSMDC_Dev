@@ -1,5 +1,14 @@
 /*
- * CUnit test suite for LRU cache module
+ * RTSMDC_Dev
+ * CUnit test suite for LRU cache module (test_lru_cache.c)
+ *
+ * Unit tests for doubly-linked list head/tail maintenance, moveToFront(), removeFromLRU(), and clearing.
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded test harness.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>

@@ -1,6 +1,14 @@
 /*
- * Integration test suite for RTSMDC_Dev
- * Tests multi-module workflows end-to-end
+ * RTSMDC_Dev
+ * CUnit integration test suite (test_integration.c)
+ *
+ * End-to-end integration testing of caching, logging, binary storage, and multi-thread operations.
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded and multi-threaded test environment.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>

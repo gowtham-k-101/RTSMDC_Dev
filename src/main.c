@@ -1,14 +1,14 @@
 /*
  * RTSMDC_Dev
- * RTSMDC_Dev module (main.c)
+ * Main entry point (main.c)
  *
- * Project source file.
+ * Application initialization, authentication prompt, and dynamic RBAC role menu handler.
  *
  * Thread ownership / synchronization:
- *   - No special synchronization.
+ *   - Initializes subsystem threads and coordinates CLI interaction.
  *
  * Public APIs:
- *   - Implementation of module services.
+ *   - Application main entry point.
  */
 #include <stdio.h>
 #include <stdlib.h>

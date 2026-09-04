@@ -1,5 +1,14 @@
 /*
- * CUnit test suite for hash table module
+ * RTSMDC_Dev
+ * CUnit test suite for hash table module (test_hash_table.c)
+ *
+ * Unit tests for O(1) hash lookups, insertions, deletions, bucket chained collisions, and clearing.
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded test harness.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>

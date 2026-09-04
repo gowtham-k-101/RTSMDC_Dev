@@ -1,5 +1,14 @@
 /*
- * CUnit test suite for cache manager module
+ * RTSMDC_Dev
+ * CUnit test suite for cache manager module (test_cache_manager.c)
+ *
+ * Unit tests for interactive stock addition, lookups, price updates, deletions, and LRU evictions.
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded test harness.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>

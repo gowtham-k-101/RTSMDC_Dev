@@ -1,5 +1,14 @@
 /*
- * CUnit test suite for main entry point verification
+ * RTSMDC_Dev
+ * CUnit test suite for main entry point (test_main.c)
+ *
+ * Integration tests for application startup, subsystem initialization, and clean termination.
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded test harness.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>

@@ -1,7 +1,14 @@
 /*
  * RTSMDC_Dev
- * Thread manager module
- * Provides thread-safe logging queue and cache persistence signaling
+ * Thread manager module (thread_manager.c)
+ *
+ * POSIX thread pool management, Read-Write locks, async logging queue, and disk flush signaling.
+ *
+ * Thread ownership / synchronization:
+ *   - Coordinates background worker threads using pthread_rwlock_t, mutexes, and condvars.
+ *
+ * Public APIs:
+ *   - Implementation of module services.
  */
 
 #include <errno.h>

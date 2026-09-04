@@ -1,10 +1,16 @@
 /*
  * RTSMDC_Dev
- * Concurrency & Helgrind Stress Simulation (stress_test.c)
+ * Concurrency stress simulation (stress_test.c)
  *
  * Parameterized multi-threaded stress test spawning worker threads
  * performing concurrent stock additions, lookups, updates, deletions,
  * background persistence requests, logging, and statistics tracking.
+ *
+ * Thread ownership / synchronization:
+ *   - Spawns parallel reader and writer worker threads under POSIX Read-Write locks.
+ *
+ * Public APIs:
+ *   - Implementation of module services.
  */
 
 #include <stdio.h>

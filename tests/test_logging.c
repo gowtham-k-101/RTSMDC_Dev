@@ -1,5 +1,14 @@
 /*
- * CUnit test suite for logger module
+ * RTSMDC_Dev
+ * CUnit test suite for logger module (test_logging.c)
+ *
+ * Unit tests for log entry formatting, ring-buffer queue enqueuing, and NULL parameter checks.
+ *
+ * Thread ownership / synchronization:
+ *   - Executes within single-threaded test harness.
+ *
+ * Public APIs:
+ *   - Test suite execution entry point.
  */
 
 #include <stdio.h>
